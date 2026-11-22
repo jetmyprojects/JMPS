@@ -219,8 +219,8 @@ ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'contact@jetmyprojects.com')
 
 # Google reCAPTCHA Configuration
 # Usage: Always use Production Keys (Localhost must be whitelisted in Google Admin Console)
-RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY", "6Ld4BV0sAAAAAE3tCfTiaor2hu9_fpKyUG-j4qZ2") 
-RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY", "6Ld4BV0sAAAAAFXj8EYSi4Sx-x50zLWAMec4ED9O") 
+RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY", "")
+RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY", "")
 
 # Stripe Configuration
 STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")

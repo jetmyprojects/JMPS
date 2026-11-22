@@ -14,3 +14,5 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.wsgi import application
 
 app = application
+
+# Deployed via Vercel (WSGI entrypoint). Push to main to trigger a redeploy.

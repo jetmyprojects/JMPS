@@ -8,17 +8,32 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-dev-key-falback-cha
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+# Hosts: Vercel + custom domain by default; extend via ALLOWED_HOSTS env
+# (comma-separated) e.g. "api.example.com,staging.example.com".
+ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1', 'jetmyprojects.com', 'www.jetmyprojects.com']
+_extra_hosts = os.getenv('ALLOWED_HOSTS', '')
+if _extra_hosts:
+    ALLOWED_HOSTS += [h.strip() for h in _extra_hosts.split(',') if h.strip()]
 
 
 # CORS & Security
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
-   
+    "https://www.jetmyprojects.com",
+    "https://jetmyprojects.com",
 ]
-CSRF_TRUSTED_ORIGINS = [    
-    
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.vercel.app",
+    "https://www.jetmyprojects.com",
+    "https://jetmyprojects.com",
 ]
+# Extend CSRF/CORS from env (comma-separated full origins, incl. scheme).
+_extra_csrf = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _extra_csrf:
+    CSRF_TRUSTED_ORIGINS += [o.strip() for o in _extra_csrf.split(',') if o.strip()]
+_extra_cors = os.getenv('CORS_ALLOWED_ORIGINS', '')
+if _extra_cors:
+    CORS_ALLOWED_ORIGINS += [o.strip() for o in _extra_cors.split(',') if o.strip()]
 
 
 # Application definition
@@ -112,16 +127,36 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'todo_app_db'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+# Prefer DATABASE_URL (set by Vercel's Neon/Postgres integration); fall back
+# to discrete DB_* env vars for local/other environments.
+import urllib.parse
+
+_DATABASE_URL = os.getenv('DATABASE_URL') or os.getenv('POSTGRES_URL')
+if _DATABASE_URL:
+    _u = urllib.parse.urlparse(_DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': _u.path.lstrip('/'),
+            'USER': urllib.parse.unquote(_u.username or ''),
+            'PASSWORD': urllib.parse.unquote(_u.password or ''),
+            'HOST': _u.hostname or '',
+            'PORT': str(_u.port or '5432'),
+            'OPTIONS': {'sslmode': 'require'},
+            'CONN_MAX_AGE': 0,  # serverless: don't hold connections open
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'todo_app_db'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

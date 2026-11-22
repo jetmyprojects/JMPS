@@ -1,7 +1,11 @@
 # Environment & secrets
 .env
 *.env
+.env.*
 !.env.example
+
+# Vercel
+.vercel/
 
 # Local-only dev settings override (production uses config/settings.py)
 config/dev_settings.py

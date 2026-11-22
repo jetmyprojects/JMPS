@@ -1,0 +1,278 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/static/ImageFaviconx.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.stripe_id|default:invoice.id }} | Jetmyprojects</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            padding: 40px;
+            background-color: #f5f5f5;
+        }
+
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-bar {
+            height: 8px;
+            background: linear-gradient(to right, #f39c12, #e67e22);
+            margin: -40px -40px 30px -40px;
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .invoice-title {
+            font-size: 36px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .logo {
+            width: 60px;
+            height: auto;
+        }
+
+        .invoice-meta {
+            margin-bottom: 30px;
+        }
+
+        .invoice-meta p {
+            margin: 5px 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .invoice-meta strong {
+            color: #2c3e50;
+            display: inline-block;
+            min-width: 120px;
+        }
+
+        .parties {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .party h3 {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .party p {
+            margin: 3px 0;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .amount-due {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+
+        .amount-due h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .pay-link {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .pay-link:hover {
+            text-decoration: underline;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            color: #7f8c8d;
+            font-weight: 600;
+            text-transform: uppercase;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        th:last-child {
+            text-align: right;
+        }
+
+        td {
+            padding: 15px 12px;
+            color: #2c3e50;
+            font-size: 14px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        td:last-child {
+            text-align: right;
+        }
+
+        .totals {
+            margin-left: auto;
+            width: 300px;
+        }
+
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .totals-row.total {
+            border-top: 2px solid #dee2e6;
+            margin-top: 10px;
+            padding-top: 15px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+
+        .totals-row.amount-due {
+            background: none;
+            border: none;
+            border-left: none;
+            padding: 8px 0;
+            margin: 0;
+            font-weight: 700;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+
+        .footer {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 12px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="invoice-container">
+        <div class="header-bar"></div>
+
+        <div class="invoice-header">
+            <h1 class="invoice-title">Invoice</h1>
+            <div class="logo">
+                <img src="{% static 'ImageLogox.png' %}" alt="JetMyProjects Logo" style="width: 60px; height: auto;">
+            </div>
+        </div>
+
+        <div class="invoice-meta">
+            <p><strong>Invoice number</strong> {{ invoice.stripe_id|default:invoice.id }}</p>
+            <p><strong>Date of issue</strong> {{ invoice.created_at|date:"F j, Y" }}</p>
+            <p><strong>Date due</strong> {{ invoice.created_at|date:"F j, Y" }}</p>
+        </div>
+
+        <div class="parties">
+            <div class="party">
+                <p style="font-weight: 600; margin-bottom: 8px;">JetMyProjects, LLC</p>
+                <p>PO Box # 668</p>
+                <p>Watkinsville, Georgia 30677</p>
+                <p>United States</p>
+                <p>contact@jetmyprojects.com</p>
+            </div>
+            <div class="party">
+                <h3>Bill to</h3>
+                <p>{{ invoice.user.get_full_name|default:invoice.user.email }}</p>
+                <p>{{ invoice.user.email }}</p>
+            </div>
+        </div>
+
+        <div class="amount-due">
+            <h2>US${{ invoice.amount }} due {{ invoice.created_at|date:"F j, Y" }}</h2>
+        </div>
+
+
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Qty</th>
+                    <th>Unit price</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ description|default:"Subscription Plan" }}</td>
+                    <td>1</td>
+                    <td>US${{ invoice.amount }}</td>
+                    <td>US${{ invoice.amount }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="totals-row">
+                <span>Subtotal</span>
+                <span>US${{ invoice.amount }}</span>
+            </div>
+            {% if discount_code %}
+            <div class="totals-row">
+                <span>Discount ({{ discount_code_name }})</span>
+                <span>-US$0.00</span>
+            </div>
+            {% endif %}
+
+            <div class="totals-row total">
+                <span>Total</span>
+                <span>US${{ invoice.amount }}</span>
+            </div>
+            <div class="totals-row amount-due">
+                <span>Amount due</span>
+                <span>US${{ invoice.amount }}</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            Page 1 of 1
+        </div>
+    </div>
+</body>
+
+</html>

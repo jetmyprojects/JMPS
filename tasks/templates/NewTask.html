@@ -1,0 +1,294 @@
+﻿{% extends 'task_base.html' %}
+{% load static %}
+
+
+{% block title %}JetMyProjects - New Project{% endblock %}
+
+
+{% block sidebar %}
+<a href="/projects/tasks/new/" class="sidebar-item active-sidebar"><i class="fas fa-plus-circle me-2"></i> New
+    Project</a>
+<a href="/projects/tasks/calendar/" class="sidebar-item"><i class="fas fa-calendar-alt me-2"></i> Calendar</a>
+<a href="/dashboard/usage/" class="sidebar-item"><i class="fas fa-battery-three-quarters me-2"></i> Space Used</a>
+{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="left-item">
+            <h2 class="section-title">Overview</h2>
+        </div>
+
+        <div class="right-item">
+            <a href="/projects/tasks/active/" class="btn btn-custom">Back to Projects</a>
+        </div>
+    </div>
+    <form id="projectForm">
+        <div class="mb-3">
+            <label class="form-label">Project Name</label>
+            <input type="text" class="form-control" id="projectName" placeholder="Enter Project name" required>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Deadline Date</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="deadlineDate" placeholder="Select Deadline" required
+                        value="{{ initial_deadline_date }}">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Deadline Time</label>
+                <input type="time" class="form-control" id="deadlineTime" required value="{{ initial_deadline_time }}">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Project Notes</label>
+            <textarea class="form-control" id="projectNotes" rows="4" style="overflow-y: hidden; resize: none;"
+                placeholder="Add additional details here..." maxlength="5000"></textarea>
+            <div class="text-end text-muted small mt-1"><span id="charCount">0</span>/5000</div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Attach Files (Max 5)</label>
+            <input type="file" class="form-control" id="fileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.docx,.pptx">
+            <div id="fileList" class="file-list mt-2"></div>
+            <small class="text-muted">Allowed formats: PDF, PNG, JPG, DOCX, PPTX</small>
+        </div>
+
+        <div class="d-flex gap-3">
+            <button type="submit" class="btn btn-custom">Create Project</button>
+            <button type="button" class="btn btn-custom" onclick="saveAsDraft(this)">Save to Drafts</button>
+        </div>
+    </form>
+    <script>
+        function initNewTaskPage() {
+            // Auto-resize textarea
+            const projectNotes = document.getElementById('projectNotes');
+            if (projectNotes) {
+                const resize = () => {
+                    projectNotes.style.height = 'auto'; // Reset to calculate new height
+                    projectNotes.style.height = projectNotes.scrollHeight + 'px';
+                };
+
+                const charCount = document.getElementById('charCount');
+                const updateCharCount = () => {
+                    if (charCount) charCount.innerText = projectNotes.value.length;
+                };
+
+                projectNotes.addEventListener('input', () => {
+                    resize();
+                    updateCharCount();
+                });
+                // Initial resize in case of browser autofill or back navigation
+                setTimeout(resize, 0);
+            }
+
+            // Initialize Flatpickr
+            const fp = flatpickr("#deadlineDate", {
+                dateFormat: "Y-m-d", // Value format sent to server
+                altInput: true,      // Enable alternative input for display
+                altFormat: "m/d/Y",  // Display format (MM/DD/YYYY)
+                minDate: "today",
+                allowInput: true
+            });
+
+            // Initialize Time with User's Timezone (Server-Side provided now)
+            // We use the values injected from the server: {{ initial_deadline_date }} and {{ initial_deadline_time }}
+            // Explicitly setting them in case the value attribute didn't catch (e.g. autocomplete overrides) check.
+            const serverDate = "{{ initial_deadline_date }}";
+            const serverTime = "{{ initial_deadline_time }}";
+
+            if (serverDate && !document.getElementById('deadlineDate').value) {
+                document.getElementById('deadlineDate').value = serverDate;
+                // Update flatpickr instance if needed
+                if (fp) fp.setDate(serverDate);
+            }
+
+            if (serverTime && !document.getElementById('deadlineTime').value) {
+                document.getElementById('deadlineTime').value = serverTime;
+            }
+
+            // Open calendar when icon is clicked
+            const dateInput = document.querySelector('#deadlineDate');
+            if (dateInput) {
+                const icon = dateInput.closest('.input-group')?.querySelector('.input-group-text');
+                if (icon) {
+                    icon.style.cursor = 'pointer';
+                    icon.addEventListener('click', () => fp.open());
+                }
+            }
+
+            let uploadedFiles = [];
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+
+            // Check if user is on Free Tier (optional check if you want to enforce limits client side before API)
+            // But API handles validation.
+
+            if (fileInput) {
+                fileInput.addEventListener('change', function (e) {
+                    const newFiles = Array.from(e.target.files);
+
+                    // Validate file types
+                    const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg', 'docx', 'pptx'];
+                    const invalidFiles = newFiles.filter(file => {
+                        const parts = file.name.split('.');
+                        const ext = parts[parts.length - 1].toLowerCase();
+                        return !allowedExtensions.includes(ext);
+                    });
+
+                    if (invalidFiles.length > 0) {
+                        showNotification('Invalid file format. Allowed: PDF, PNG, JPG, DOCX, PPTX.', 'error');
+                        e.target.value = ''; // Clear selection (it's confusing to keep invalid ones selected in the input itself, though we manage via array)
+                        return;
+                    }
+
+                    // Filter out duplicates
+                    const uniqueNewFiles = newFiles.filter(newFile => {
+                        const isDuplicate = uploadedFiles.some(existingFile => existingFile.name === newFile.name);
+                        if (isDuplicate) {
+                            showNotification(`File "${newFile.name}" is already selected.`, 'warning');
+                        }
+                        return !isDuplicate;
+                    });
+
+                    if (uniqueNewFiles.length === 0 && newFiles.length > 0) {
+                        e.target.value = '';
+                        return;
+                    }
+
+                    if (uploadedFiles.length + uniqueNewFiles.length > 5) {
+                        showNotification('You can only upload a maximum of 5 files.', 'warning');
+                        e.target.value = '';
+                        return;
+                    }
+
+                    uploadedFiles = uploadedFiles.concat(uniqueNewFiles);
+                    fileInput.value = '';
+                    displayFiles();
+                });
+            }
+
+            function displayFiles() {
+                if (!fileList) return;
+                fileList.innerHTML = '';
+                uploadedFiles.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'd-flex align-items-center justify-content-between p-2 mb-2 bg-light rounded';
+                    fileItem.innerHTML = `
+                <span class="small"><i class="fas fa-file me-2"></i>${file.name}</span>
+                <button type="button" class="btn btn-sm text-danger border-0 p-0" onclick="removeFile(${index})"><i class="fas fa-times"></i></button>
+            `;
+                    fileList.appendChild(fileItem);
+                });
+            }
+
+            window.removeFile = function (index) {
+                uploadedFiles.splice(index, 1);
+                displayFiles();
+            }
+
+            const projectForm = document.getElementById('projectForm');
+            if (projectForm) {
+                projectForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await submitTask('ACTIVE', e.target.querySelector('button[type="submit"]'));
+                });
+            }
+
+            window.saveAsDraft = async function (btn) {
+                await submitTask('DRAFT', btn);
+            }
+
+            async function submitTask(status, btnElement) {
+                const originalText = btnElement.innerHTML;
+                btnElement.disabled = true;
+                btnElement.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
+                const formData = new FormData();
+                formData.append('project_name', document.getElementById('projectName').value);
+                formData.append('deadline_date', document.getElementById('deadlineDate').value);
+                formData.append('deadline_time', document.getElementById('deadlineTime').value);
+                formData.append('project_notes', document.getElementById('projectNotes').value);
+                formData.append('status', status);
+
+                uploadedFiles.forEach(file => {
+                    formData.append('uploaded_files', file);
+                });
+
+                try {
+                    const response = await ApiClient.fetch('/api/v1/tasks/', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        showNotification(status === 'DRAFT' ? 'Project saved to drafts!' : 'Project created successfully!', 'success');
+                        setTimeout(() => {
+                            window.location.href = status === 'DRAFT' ? '/projects/tasks/draft/' : '/projects/tasks/active/';
+                        }, 1500);
+                    } else if (response.status === 403) {
+                        // Check if it's an upgrade issue (Billing)
+                        // The API returns 403 with specific details often
+                        // However, per requirements, we catch 403 and might want to show "Upgrade Plan" toast if limit reached.
+                        // But we rely on backend message usually.
+                        const err = await response.json();
+                        if (err.code === 'limit_reached' || (err.detail && err.detail.toLowerCase().includes('upgrade'))) {
+                            showNotification('Limit reached. Please upgrade your plan.', 'error');
+                            // Trigger upgrade toast? Logic was in another task but nice to have.
+                        } else {
+                            showNotification(err.detail || 'Failed to create project.', 'error');
+                        }
+                        btnElement.disabled = false;
+                        btnElement.innerHTML = originalText;
+                    } else {
+                        const err = await response.json();
+                        let errorMsg = 'Error creating project';
+                        if (err) {
+                            if (err.detail) {
+                                errorMsg = err.detail;
+                            } else {
+                                // Serialize error object
+                                const messages = [];
+                                for (const [key, value] of Object.entries(err)) {
+                                    const valStr = Array.isArray(value) ? value.join(' ') : value;
+                                    // Capitalize key
+                                    const keyStr = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+                                    messages.push(`${keyStr}: ${valStr}`);
+                                }
+                                if (messages.length > 0) errorMsg = messages.join('<br>');
+                            }
+                        }
+                        showNotification(errorMsg, 'error');
+                        btnElement.disabled = false;
+                        btnElement.innerHTML = originalText;
+                    }
+                } catch (e) {
+                    console.error(e);
+                    showNotification('Error creating project: ' + e.toString(), 'error');
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = originalText;
+                }
+            }
+
+            // Update user greeting and check admin
+            async function loadProfile() {
+                try {
+                    const profileResponse = await ApiClient.fetch('/api/v1/accounts/user/profile/');
+                    if (profileResponse.ok) {
+                        const profileData = await profileResponse.json();
+                        const name = profileData.first_name || profileData.username || 'User';
+                        const greetingEl = document.getElementById('userGreeting');
+                        if (greetingEl) greetingEl.innerHTML = `Hello, ${name}!`;
+                    }
+                } catch (e) { console.error(e); }
+            }
+            loadProfile();
+        }
+
+        // Run immediately
+        initNewTaskPage();
+    </script>
+</main>
+{% endblock %}

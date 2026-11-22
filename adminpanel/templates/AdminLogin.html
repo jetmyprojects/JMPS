@@ -1,0 +1,284 @@
+{% extends 'account_base.html' %}
+{% load static %}
+
+{% block title %}Admin Panel - Sign In{% endblock %}
+
+{% block css_framework %}
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    brand: {
+                        green: '#4EA72E',
+                        orange: '#BE5103',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    }
+                },
+                fontFamily: {
+                    sans: ['Outfit', 'sans-serif'],
+                },
+                keyframes: {
+                    slideIn: {
+                        '0%': { transform: 'translateX(100%)', opacity: '0' },
+                        '100%': { transform: 'translateX(0)', opacity: '1' },
+                    }
+                },
+                animation: {
+                    slideIn: 'slideIn 0.3s ease-out forwards',
+                }
+            }
+        }
+    }
+</script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="icon" type="image/png" href="{% static 'ImageFaviconx.png' %}">
+
+<!-- Global CSS -->
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block body_class %}min-h-screen font-sans bg-white overflow-hidden{% endblock %}
+
+{% block toast_container %}
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+{% endblock %}
+
+{% block content %}
+<div class="flex h-screen w-full">
+    <!-- Left Side: Image -->
+    <div class="hidden lg:flex w-1/2 relative bg-slate-900 items-center justify-center overflow-hidden">
+        <!-- Background Image -->
+        <div class="absolute inset-0 z-0">
+            <!-- You might want a different image for Admin, reusing standard for now -->
+            <img src="{% static 'ImageSignIn.jpg' %}"
+                class="w-full h-full object-cover opacity-60 transition-transform duration-[20s] hover:scale-110"
+                alt="Workspace">
+        </div>
+
+        <!-- Logo (Top Left) -->
+        <div class="absolute top-8 left-8 z-20">
+            <a href="{% url 'index' %}" class="block flex items-center gap-2 no-underline">
+                <img src="{% static 'ImageLogox.png' %}" alt="Logo" class="h-12 w-auto drop-shadow-md">
+                <span class="text-2xl font-bold text-[#4EA72E]">JetMyProjects</span>
+            </a>
+        </div>
+
+        <!-- Overlay Content -->
+        <div class="relative z-10 px-16 text-center text-white max-w-2xl">
+            <h2 class="text-4xl xl:text-5xl font-bold mb-4 leading-tight">Admin Portal</h2>
+            <p class="text-lg text-slate-200 leading-relaxed">Secure access for platform administration.</p>
+        </div>
+
+        <!-- Gradient Overlay -->
+        <div
+            class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent z-0 pointer-events-none">
+        </div>
+    </div>
+
+    <!-- Right Side: Form -->
+    <div class="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 bg-white h-full relative">
+        <div class="w-full max-w-[450px] space-y-7">
+            <!-- Header -->
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-slate-800 mb-1.5">Admin Sign In</h1>
+                <p class="text-slate-500 text-base">Please enter your admin credentials.</p>
+            </div>
+
+            <!-- Form -->
+            <form action="#" onsubmit="return false;" id="loginForm" class="space-y-4">
+
+                <!-- Email Input -->
+                <div class="relative group">
+                    <input type="email" id="floatingEmail" name="email_signin" required maxlength="100" class="peer w-full px-4 pt-6 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none 
+               focus:border-brand-green focus:bg-white transition-all text-slate-800 
+               placeholder-transparent text-base" placeholder="Email Address">
+                    <label for="floatingEmail" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none
+               peer-placeholder-shown:top-1/2
+               peer-placeholder-shown:-translate-y-1/2
+               peer-placeholder-shown:text-base
+
+               peer-focus:top-1
+               peer-focus:translate-y-0
+               peer-focus:text-sm
+               peer-focus:text-brand-green
+
+               peer-[&:not(:placeholder-shown)]:top-1
+               peer-[&:not(:placeholder-shown)]:translate-y-0
+               peer-[&:not(:placeholder-shown)]:text-sm
+               peer-[&:not(:placeholder-shown)]:text-slate-500
+
+               bg-white px-1">
+                        Email Address
+                    </label>
+                </div>
+
+                <!-- Password Input -->
+                <div class="relative group">
+                    <input type="password" id="floatingPassword" name="password_signin" required maxlength="128" class="peer w-full px-4 pt-6 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none 
+               focus:border-brand-green focus:bg-white transition-all text-slate-800 
+               placeholder-transparent text-base" placeholder="Password">
+                    <label for="floatingPassword" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none
+               peer-placeholder-shown:top-1/2
+               peer-placeholder-shown:-translate-y-1/2
+               peer-placeholder-shown:text-base
+
+               peer-focus:top-1
+               peer-focus:translate-y-0
+               peer-focus:text-sm
+               peer-focus:text-brand-green
+
+               peer-[&:not(:placeholder-shown)]:top-1
+               peer-[&:not(:placeholder-shown)]:translate-y-0
+               peer-[&:not(:placeholder-shown)]:text-sm
+               peer-[&:not(:placeholder-shown)]:text-slate-500
+
+               bg-white px-1">
+                        Password
+                    </label>
+                </div>
+
+                <!-- Options: Show Password -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="showPassword"
+                            class="custom-checkbox w-5 h-5 rounded border-slate-300 text-brand-green focus:ring-brand-green cursor-pointer">
+                        <label for="showPassword"
+                            class="ml-2 text-sm text-slate-500 cursor-pointer hover:text-slate-700 select-none">Show
+                            Password</label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn"
+                    class="w-full py-3.5 rounded-xl bg-brand-dark text-white font-bold shadow-lg shadow-gray-400 transform transition-all duration-200 hover:shadow-xl hover:bg-slate-800 hover:-translate-y-1 active:translate-y-0 text-base">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="text-center pt-1">
+                <a href="/" class="text-sm text-slate-400 hover:text-brand-green transition-all">Back to Landing
+                    Page</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toast Notification System
+    function showNotification(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            warning: 'bg-yellow-500',
+            info: 'bg-blue-500'
+        };
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+
+        toast.className = `${colors[type]} text-white px-6 py-4 rounded-xl shadow-xl flex items-center min-w-[300px] animate-[slideIn_0.3s_ease-out]`;
+        toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl mr-3"></i>
+                <span class="font-medium">${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-auto text-white/80 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-x-full', 'transition-all', 'duration-500');
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    }
+
+    // Form Logic
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordField = document.getElementById('floatingPassword');
+        const showPasswordCheckbox = document.getElementById('showPassword');
+        const submitBtn = document.getElementById('submitBtn');
+        const loginForm = document.getElementById('loginForm');
+
+        // Show/Hide Password
+        if (showPasswordCheckbox) {
+            showPasswordCheckbox.addEventListener('change', function () {
+                passwordField.type = this.checked ? 'text' : 'password';
+            });
+        }
+
+        // Form Submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('floatingEmail').value;
+            const password = document.getElementById('floatingPassword').value;
+
+            // Loading State
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Verifying...';
+
+            try {
+                // Pointing to the NEW Admin Login Endpoint
+                const response = await fetch('/api/v1/admin/auth/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('access_token', data.access);
+                    localStorage.setItem('refresh_token', data.refresh);
+                    showNotification('Web Access Granted', 'success');
+                    setTimeout(() => window.location.href = '/admin-dashboard/', 1000);
+                } else {
+                    let errorMessage = 'Login Failed.';
+
+                    if (data.non_field_errors) {
+                        errorMessage = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+                    } else if (data.detail) {
+                        errorMessage = data.detail;
+                    } else if (data.message) {
+                        errorMessage = data.message;
+                    } else if (data.error) {
+                        errorMessage = data.error;
+                    }
+
+                    showNotification(errorMessage, 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Connection Error.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+    });
+</script>
+{% endblock %}

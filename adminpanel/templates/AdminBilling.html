@@ -1,0 +1,162 @@
+{% extends 'BaseAdmin.html' %}
+
+{% block page_title %}Billing & Subscriptions{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">User</th>
+                        <th>Plan</th>
+                        <th>Status</th>
+                        <th>Invoice</th>
+                        <th>End Date</th>
+                    </tr>
+                </thead>
+                <tbody id="billingTableBody">
+                    <tr>
+                        <td colspan="5" class="text-center py-4">Loading subscriptions...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination Controls -->
+<div id="paginationControls" class="d-flex justify-content-center gap-2 mt-4 pb-4">
+    <!-- Buttons injected via JS -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentPage = 1;
+    const pageSize = 10;
+
+    async function loadBilling(page = 1) {
+        currentPage = page;
+        const token = localStorage.getItem('access_token');
+        const response = await fetch(`/api/v1/admin/billing/?page=${page}&page_size=${pageSize}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        const subs = data.results || data;
+
+        const tbody = document.getElementById('billingTableBody');
+        tbody.innerHTML = '';
+
+        if (subs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No subscriptions found.</td></tr>';
+        } else {
+            subs.forEach(sub => {
+                let invoiceHtml = '<span class="text-muted">-</span>';
+                if (sub.latest_invoice) {
+                    const isRefund = sub.latest_invoice.amount < 0 || sub.latest_invoice.status === 'refunded';
+                    const label = isRefund ? 'Refund Receipt' : 'Invoice';
+                    const styleClass = isRefund ? 'text-danger fw-bold' : 'text-primary';
+
+                    let downloadUrl = `/api/v1/billing/invoices/${sub.latest_invoice.id}/download/`;
+                    // If it's a real invoice (not refund) and has a direct PDF link, use it
+                    if (!isRefund && sub.latest_invoice.invoice_pdf) {
+                        downloadUrl = sub.latest_invoice.invoice_pdf;
+                    }
+
+                    invoiceHtml = `<a href="${downloadUrl}" target="_blank" class="${styleClass} text-decoration-none"><i class="fas fa-file-invoice me-1"></i>${label}</a>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="ps-4 fw-bold">${sub.user_email}</td>
+                    <td>${sub.plan_name || 'No Plan'}</td>
+                    <td>
+                        <span class="badge ${sub.is_active ? 'bg-success' : 'bg-warning'}">
+                            ${sub.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>${invoiceHtml}</td>
+                    <td>${sub.end_date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        renderPagination(data);
+    }
+
+    function renderPagination(data) {
+        const container = document.getElementById('paginationControls');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (!data.count) return;
+
+        const totalPages = Math.ceil(data.count / pageSize);
+        if (totalPages <= 1) return;
+
+        // Previous Button
+        const prevBtn = document.createElement('button');
+        prevBtn.className = `btn btn-sm ${data.previous ? 'btn-outline-secondary' : 'btn-outline-secondary disabled'}`;
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevBtn.onclick = () => {
+            if (data.previous) loadBilling(currentPage - 1);
+        };
+        container.appendChild(prevBtn);
+
+        // Numbered Buttons Logic
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        if (currentPage <= 3) {
+            endPage = Math.min(5, totalPages);
+        }
+        if (currentPage >= totalPages - 2) {
+            startPage = Math.max(1, totalPages - 4);
+        }
+
+        if (startPage > 1) {
+            addPageBtn(1, container);
+            if (startPage > 2) addEllipsis(container);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            addPageBtn(i, container);
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) addEllipsis(container);
+            addPageBtn(totalPages, container);
+        }
+
+        // Next Button
+        const nextBtn = document.createElement('button');
+        nextBtn.className = `btn btn-sm ${data.next ? 'btn-outline-secondary' : 'btn-outline-secondary disabled'}`;
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextBtn.onclick = () => {
+            if (data.next) loadBilling(currentPage + 1);
+        };
+        container.appendChild(nextBtn);
+    }
+
+    function addPageBtn(page, container) {
+        const btn = document.createElement('button');
+        const isActive = page === currentPage;
+        btn.className = `btn btn-sm ${isActive ? 'btn-primary text-white w-auto' : 'btn-outline-secondary'}`;
+        btn.textContent = page;
+        btn.onclick = () => loadBilling(page);
+        container.appendChild(btn);
+    }
+
+    function addEllipsis(container) {
+        const span = document.createElement('span');
+        span.className = 'px-2 text-muted';
+        span.textContent = '...';
+        container.appendChild(span);
+    }
+
+    loadBilling();
+</script>
+{% endblock %}

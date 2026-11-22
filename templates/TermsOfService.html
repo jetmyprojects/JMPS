@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-PJKRHXR5');</script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jetmyprojects | Smart Project & Deadline Tracker</title>
+    <meta name="description"
+        content="Manage projects, track deadlines, and stay productive with jetmyprojects. Simple, fast, cloud-based project management.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="icon" href="{% static 'ImageFaviconx.png' %}" type="image/png">
+
+</head>
+
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PJKRHXR5" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="{% url 'index' %}" class="logo" target="_blank"
+                    style="display: flex; align-items: center; text-decoration: none;">
+                    <img src="{% static 'ImageLogox.png' %}" alt="JetMyProjects Logo" style="height: 32px;">
+                    JetMyProjects
+                </a>
+                <ul class="nav-links">
+                    <li><a href="{% url 'index' %}#features">Features</a></li>
+                    <li><a href="{% url 'index' %}#pricing">Pricing</a></li>
+                    <li><a href="{% url 'index' %}#contact">Contact</a></li>
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="nav-right d-none d-md-flex">
+                {% if user.is_authenticated %}
+                <a href="{% url 'fe_logout' %}" id="nav-logout-btn" class="btn btn-secondary">Log out</a>
+                {% else %}
+                <a href="{% url 'fe_login' %}" id="nav-login-btn" class="btn btn-secondary">Sign In</a>
+                <a href="{% url 'fe_signup' %}" class="btn btn-primary">Sign Up</a>
+                {% endif %}
+            </div>
+            <!-- Hamburger Button -->
+            <button class="hamburger-btn d-md-none" aria-label="Toggle navigation" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <div class="mobile-menu d-md-none" id="mobile-menu" style="display: none;">
+            <ul class="mobile-nav-links">
+                <li><a href="#features" onclick="toggleMobileMenu()">Features</a></li>
+                <li><a href="#pricing" onclick="toggleMobileMenu()">Pricing</a></li>
+                <li><a href="{% url 'index' %}#contact" onclick="toggleMobileMenu()">Contact</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'dashboard' %}" class="text-brand-green font-semibold"
+                        onclick="toggleMobileMenu()">Dashboard</a></li>
+
+                {% endif %}
+
+            </ul>
+            <div class="mobile-nav-buttons">
+                {% if user.is_authenticated %}
+                <a href="{% url 'fe_logout' %}" class="btn btn-secondary w-100 text-center">Log out</a>
+                {% else %}
+                <a href="{% url 'fe_login' %}" class="btn btn-secondary w-100 text-center mb-2">Sign In</a>
+                <a href="{% url 'fe_signup' %}" class="btn btn-primary w-100 text-center"
+                    onclick="localStorage.setItem('subscribe_intent', 'true');">Sign Up</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="legal-wrapper">
+        <div class="container">
+            <div class="legal-tabs">
+                <a href="{% url 'terms' %}" class="legal-tab active">Terms of Service</a>
+                <a href="{% url 'privacy' %}" class="legal-tab">Privacy Policy</a>
+            </div>
+
+            <div class="legal-card">
+                <div class="legal-content">
+                    <h1 class="document-title">Terms of Service</h1>
+                    <p class="document-meta">
+                        <i class="far fa-calendar-alt me-2"></i>Effective Date: January 11, 2026
+                    </p>
+
+                    <div class="company-box">
+                        <div class="row">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <strong>Company:</strong> JetMyProjects, LLC<br>
+                                <strong>Website:</strong> jetmyprojects.com
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Contact:</strong> privacy@jetmyprojects.com
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>1. Acceptance of Terms</h2>
+                    <p>By accessing or using the Service, you agree to these Terms of Service and our Privacy Policy. If
+                        you
+                        do not agree, do not use the Service.</p>
+
+                    <h2>2. Eligibility</h2>
+                    <p>You must be 13 years or older to use the Service.</p>
+
+                    <h2>3. Account Registration</h2>
+                    <p>Provide accurate information during registration. You are responsible for maintaining the
+                        confidentiality of your login credentials.</p>
+
+                    <h2>4. Compliance with Laws</h2>
+                    <p>You agree to use the Service in accordance with all applicable local, state, and federal laws and
+                        regulations.</p>
+
+                    <h2>5. User Content Responsibility</h2>
+                    <p>You are fully responsible for any information, data, or content you upload or submit through the
+                        Service. JMP does not review, verify, or endorse user content and assumes no responsibility or
+                        liability for the contents of any user-submitted information in any manner whatsoever.</p>
+
+                    <h2>6. Subscription & Payment</h2>
+                    <ul>
+                        <li><strong>Pricing:</strong> $120 per year for a single subscription plan.</li>
+                        <li><strong>Payment Processor:</strong> All payments are processed securely via Stripe. We do
+                            not
+                            store credit card details.</li>
+                        <li><strong>Refunds:</strong> If you cancel your subscription before the end of your annual
+                            term, we
+                            will issue a pro-rated refund based on the remaining months of your subscription.
+                            <ul>
+                                <li>Example: If you cancel after 4 months, you will be refunded for 8 months (≈ $66.67),
+                                    after adjusting for fees and taxes.</li>
+                                <li>Refunds are processed to the original payment method within 5–10 business days.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Renewals:</strong> Subscriptions automatically renew annually unless canceled before
+                            the
+                            renewal date.</li>
+                    </ul>
+
+                    <h2>7. Use of Service</h2>
+                    <p>You agree not to misuse the Services. For example, you must not restrict or inhibit any other
+                        user
+                        from using and enjoying the Services, or encourage or facilitate violations of these Terms or
+                        the
+                        Privacy Policy.</p>
+
+                    <div style="margin-top: 60px; border-top: 1px solid #e2e8f0; padding-top: 30px; color: #64748b;">
+                        <p class="mb-0"><strong>Questions?</strong> Contact us at <a
+                                href="mailto:privacy@jetmyprojects.com">privacy@jetmyprojects.com</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <!-- Footer -->
+    <footer class="footer">
+        <div
+            class="footer-container d-flex flex-column flex-md-row justify-content-between align-items-center px-5 py-3">
+            <div class="text-start mb-3 mb-md-0">
+                <div class="mb-1">Copyright @2026 JetMyprojects, LLC. All rights reserved.</div>
+                <div style="color: #9ca3af;">Mail: PO Box # 668, Watkinsville, GA 30677</div>
+            </div>
+            <div class="d-flex gap-4 align-items-center">
+                <a href="{% url 'terms' %}"
+                    class="text-decoration-none link-light link-opacity-75 link-opacity-100-hover">Terms of Service</a>
+                <a href="{% url 'privacy' %}"
+                    class="text-decoration-none link-light link-opacity-75 link-opacity-100-hover">Privacy Policy</a>
+                <a href="https://www.linkedin.com/company/jetmyprojects/" target="_blank"
+                    class="text-decoration-none link-light link-opacity-75 link-opacity-100-hover">
+                    <i class="fab fa-linkedin fa-lg"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.querySelector('.hamburger-btn i');
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+                btn.classList.remove('fa-times');
+                btn.classList.add('fa-bars');
+            } else {
+                menu.style.display = 'block';
+                btn.classList.remove('fa-bars');
+                btn.classList.add('fa-times');
+            }
+        }
+    </script>
+</body>
+
+</html>

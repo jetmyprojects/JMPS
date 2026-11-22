@@ -1,0 +1,46 @@
+{% extends 'payment_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - New Card Details{% endblock %}
+
+{% block header_title %}Update Payment{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <h2 class="section-title text-center">New Card Details</h2>
+
+    <div class="info-container">
+        <form action="{% url 'dashboard_payment_edit_confirmation' %}" class="text-start">
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">CARDHOLDER NAME</label>
+                <input type="text" class="form-control" placeholder="John Doe" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">CARD NUMBER</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="far fa-credit-card"></i></span>
+                    <input type="text" class="form-control border-start-0" placeholder="0000 0000 0000 0000" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label class="form-label small fw-bold text-muted">EXPIRY DATE</label>
+                    <input type="text" class="form-control" placeholder="MM/YY" required>
+                </div>
+                <div class="col-6 mb-3">
+                    <label class="form-label small fw-bold text-muted">CVC</label>
+                    <input type="text" class="form-control" placeholder="123" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-brand-orange mt-2">Save New Card</button>
+            <div class="text-center mt-3">
+                <a href="{% url 'dashboard_payment_edit_info' %}"
+                    class="text-decoration-none text-muted small">Cancel</a>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}

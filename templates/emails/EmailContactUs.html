@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jetmyprojects | Smart Project & Deadline Tracker</title>
+</head>
+
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+
+    <!-- CONTACT US EMAIL -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+        style="background-color: #f4f7f6; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0"
+                    style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #BE5103; padding: 30px; text-align: center;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                <tr>
+                                    <td style="padding-right: 15px; vertical-align: middle;">
+                                        <img src="{{ logo_url }}" width="45" height="45" alt="JetMyProjects Logo"
+                                            border="0" style="display:block;">
+
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <h1
+                                            style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; white-space: nowrap;">
+                                            JetMyProjects<sup style="font-size: 14px;">®</sup>
+                                        </h1>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="margin: 0 0 20px 0; color: #BE5103; font-size: 24px; font-weight: 700;">Response
+                                to your Inquiry</h2>
+                            <p style="margin: 0 0 15px 0; color: #333; font-size: 16px; line-height: 1.6;">Hi
+                                {{ first_name }},
+                            </p>
+
+                            <!-- Admin Reply Bubble -->
+                            <div
+                                style="background-color: #e8f5e9; border-left: 4px solid #4EA72E; padding: 20px; border-radius: 4px; margin-bottom: 25px;">
+                                <h3 style="margin: 0 0 10px 0; color: #2e7d32; font-size: 16px;">Message from our Team:
+                                </h3>
+                                <p
+                                    style="margin: 0; color: #333; font-size: 16px; line-height: 1.6; white-space: pre-wrap;">
+                                    {{ reply_message }}</p>
+                            </div>
+
+                            <p style="margin: 0 0 15px 0; color: #666; font-size: 14px; line-height: 1.6;">
+                                Original Inquiry Details:
+                            </p>
+
+                            <!-- Contact Information Summary -->
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                                style="margin: 25px 0; background-color: #f4f7f6; border-radius: 8px; padding: 20px;">
+                                <tr>
+                                    <td>
+                                        <h3
+                                            style="margin: 0 0 15px 0; color: #BE5103; font-size: 18px; font-weight: 600;">
+                                            Your Contact Details</h3>
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                                            style="color: #333; font-size: 14px; line-height: 1.8;">
+                                            <tr>
+                                                <td style="padding: 5px 0; width: 150px; font-weight: 600;">Name:</td>
+                                                <td style="padding: 5px 0;">{{ first_name }} {{ last_name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px 0; font-weight: 600;">Email:</td>
+                                                <td style="padding: 5px 0;">{{ email }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px 0; font-weight: 600;">Phone:</td>
+                                                <td style="padding: 5px 0;">{{ phone|default:"-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px 0; font-weight: 600;">Company:</td>
+                                                <td style="padding: 5px 0;">{{ company|default:"-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px 0; font-weight: 600;">Country:</td>
+                                                <td style="padding: 5px 0;">{{ country|default:"-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px 0; font-weight: 600;">Team Size:</td>
+                                                <td style="padding: 5px 0;">{{ team_size|default:"-" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 5px 0; font-weight: 600;">Industry:</td>
+                                                <td style="padding: 5px 0;">{{ industry|default:"-" }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Message Summary -->
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                                style="margin: 25px 0; background-color: #f4f7f6; border-radius: 8px; padding: 20px;">
+                                <tr>
+                                    <td>
+                                        <h3
+                                            style="margin: 0 0 15px 0; color: #BE5103; font-size: 18px; font-weight: 600;">
+                                            Your Message</h3>
+                                        <p style="margin: 0; color: #333; font-size: 14px; line-height: 1.6;">
+                                            {{ original_message }}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 0 0 25px 0; color: #333; font-size: 16px; line-height: 1.6;">
+                                If you have any further questions, feel free to reply to this email.
+                            </p>
+                            <ul
+                                style="margin: 0 0 25px 0; padding-left: 20px; color: #333; font-size: 16px; line-height: 1.8;">
+                                <li>A personalized response from our team</li>
+                                <li>Discussion of how JetMyProjects can meet your needs</li>
+                                <li>Information about pricing and plans that fit your team size</li>
+                                <li>Answers to your specific questions</li>
+                            </ul>
+
+                            <table role="presentation" cellpadding="0" cellspacing="0"
+                                style="margin: 30px auto 0 auto;">
+                                <tr>
+                                    <td style="background-color: #4EA72E; border-radius: 5px; text-align: center;">
+                                        <a href="https://jetmyprojects.com/login/"
+                                            style="display: inline-block; padding: 14px 40px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px;">
+                                            Visit Dashboard
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 25px 0 0 0; color: #666; font-size: 14px; line-height: 1.6;">
+                                We appreciate your interest in JetMyProjects and look forward to helping you streamline
+                                your project management.
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td
+                            style="background-color: #f4f7f6; padding: 20px 30px; text-align: center; border-top: 1px solid #eee;">
+                            <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
+                                © 2026 JetMyProjects. All rights reserved.
+                            </p>
+                            <p style="margin: 0; color: #999; font-size: 12px;">
+                                <a href="https://www.jetmyprojects.com/terms/"
+                                    style="color: #999; text-decoration: underline;">Terms of Service</a> |
+                                <a href="https://www.jetmyprojects.com/privacy/"
+                                    style="color: #999; text-decoration: underline;">Privacy Policy</a> |
+                                <a href="https://jetmyprojects.com/#contact"
+                                    style="color: #999; text-decoration: underline;">Contact Support</a>
+                            </p>
+                            <p style="margin: 10px 0 0 0; color: #999; font-size: 12px;">
+                                Contact us: <a href="mailto:contact@jetmyprojects.com"
+                                    style="color: #999; text-decoration:underline;">contact@jetmyprojects.com</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

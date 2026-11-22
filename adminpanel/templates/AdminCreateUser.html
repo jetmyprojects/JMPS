@@ -1,0 +1,201 @@
+{% extends 'BaseAdmin.html' %}
+
+{% block page_title %}Create New User{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">User Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <form id="createUserForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Email Address <span
+                                class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="email" class="form-control" name="email" id="createEmail" required
+                                placeholder="Enter email address">
+                            <button class="btn btn-outline-secondary" type="button" onclick="sendOTP()">Send
+                                OTP</button>
+                            <span class="input-group-text bg-transparent border-0" id="emailCheckIcon"
+                                style="display: none;">
+                                <i class="fas fa-check-circle text-success fa-lg"></i>
+                            </span>
+                        </div>
+                        <div id="emailVerifyFeedback" class="form-text">Click "Send OTP" to receive the code.</div>
+                        <input type="hidden" name="otp_token" id="otpToken">
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">First Name <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="first_name" id="createFirstName"
+                                placeholder="First Name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Last Name <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="last_name" id="createLastName"
+                                placeholder="Last Name" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Organization Name <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="organisation_name" id="createOrg"
+                                placeholder="Organization Name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Zip Code <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="zip_code" id="createZip"
+                                placeholder="Zip Code" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">OTP <span
+                                class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="otp" id="createOTP" required
+                            placeholder="Enter 6-digit verification code">
+                        <div class="form-text">User must provide you the OTP sent to their email.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Initial Password <span
+                                class="text-danger">*</span></label>
+                        <input type="password" class="form-control" name="password" id="createPassword" required
+                            minlength="6" placeholder="******">
+                    </div>
+
+                    <div class="mb-4 form-check bg-light p-3 rounded border">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" name="is_superuser" id="isSuperuser">
+                        <label class="form-check-label fw-bold" for="isSuperuser">Grant Admin Privileges
+                            (Superuser)</label>
+                        <div class="form-text mt-1">Superusers have full access to the Admin Panel.</div>
+                    </div>
+
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-end py-3">
+                        <button type="button" class="btn btn-secondary me-2" onclick="history.back()">Cancel</button>
+                        <button type="submit" class="btn text-white fw-bold" style="background-color: #fd7e14;">Create
+                            User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block extra_js %}
+    <script>
+        async function sendOTP() {
+            // Get values
+            const email = document.getElementById('createEmail').value;
+            const firstName = document.getElementById('createFirstName').value;
+            const lastName = document.getElementById('createLastName').value;
+            const org = document.getElementById('createOrg').value;
+            const zip = document.getElementById('createZip').value;
+            const feedback = document.getElementById('emailVerifyFeedback');
+            const icon = document.getElementById('emailCheckIcon');
+            const tokenInput = document.getElementById('otpToken');
+
+            // Reset Feedback
+            feedback.innerHTML = '';
+            icon.style.display = 'none';
+            tokenInput.value = '';
+
+            // Validate required fields for sending OTP (Name/Email/Org/Zip)
+            if (!email || !firstName || !org || !zip) {
+                feedback.innerHTML = '<span class="text-danger fw-bold">Please fill Name, Org, Zip, and Email before sending OTP.</span>';
+                return;
+            }
+
+            feedback.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Sending OTP Email...</span>';
+
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch('/api/v1/admin/user/send-otp/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        first_name: firstName,
+                        // We don't send OTP here, we request one to be generated
+                    })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.available) {
+                    if (data.sent) {
+                        feedback.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-check-circle"></i> OTP Sent! Please enter the code below.</span>';
+                        // Store the signed token
+                        if (data.token) {
+                            tokenInput.value = data.token;
+                        }
+                    } else {
+                        feedback.innerHTML = '<span class="text-warning fw-bold">Email Available, but OTP send failed. ' + (data.error || '') + '</span>';
+                    }
+                    icon.style.display = 'block';
+                } else {
+                    feedback.innerHTML = '<span class="text-danger fw-bold"><i class="fas fa-times-circle"></i> ' + (data.error || 'Email already taken') + '</span>';
+                    icon.style.display = 'none';
+                }
+            } catch (e) {
+                console.error(e);
+                feedback.innerHTML = '<span class="text-danger fw-bold">Error sending OTP</span>';
+                icon.style.display = 'none';
+            }
+        }
+
+        document.getElementById('createUserForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            data.is_superuser = document.getElementById('isSuperuser').checked;
+
+            const token = localStorage.getItem('access_token');
+
+            try {
+                const response = await fetch('/api/v1/admin/user/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    // Success
+                    // We can use the global showToast if available from BaseAdmin, but redirecting is better
+                    window.location.href = '/admin-dashboard/users/?created=true';
+                } else {
+                    const errorData = await response.json();
+                    let errorMsg = 'Failed to create user.';
+                    if (errorData.email) errorMsg = errorData.email[0];
+                    if (errorData.password) errorMsg = errorData.password[0];
+
+                    alert(errorMsg); // Simple alert or use toast if we want to stay on page
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    </script>
+    {% endblock %}

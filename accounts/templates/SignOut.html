@@ -1,0 +1,46 @@
+{% extends 'account_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Sign Out{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="auth-brand-container">
+        <a href="https://www.jetmyprojects.com/" target="_blank" class="auth-brand-name">
+            <img src="{% static 'ImageLogox.png' %}" alt="Logo" class="auth-brand-logo">
+            <span>JetMyProjects<sup>&reg;</sup></span>
+        </a>
+    </div>
+
+    <div class="row g-0 vh-100">
+        <div class="col-md-6 d-none d-md-block">
+            <img src="{% static 'ImageSignOut.jpg' %}" class="auth-full-image" alt="Sign Out Image">
+        </div>
+
+        <div class="col-md-6 d-flex align-items-center justify-content-center bg-white">
+            <div class="auth-content-container text-start">
+                <h1 class="mb-3 auth-title">Sign Out</h1>
+                <p class="text-muted fs-5 mb-4">You have been safely signed out. Where would you like to go next?
+                </p>
+
+                <div class="d-grid gap-3">
+                    <a href="/login/" class="btn auth-btn-primary text-center"
+                        style="padding: 12px 20px; border-radius: 5px; font-weight: 600; text-decoration: none;">
+                        Go to Sign In
+                    </a>
+
+                    <a href="https://www.jetmyprojects.com" target="_blank"
+                        class="btn btn-outline-secondary text-center"
+                        style="padding: 12px 20px; border-radius: 5px; font-weight: 600; text-decoration: none;">
+                        Visit Homepage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

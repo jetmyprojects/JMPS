@@ -1,0 +1,405 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jetmyprojects | Smart Project & Deadline Tracker</title>
+    <meta name="description"
+        content="Manage projects, track deadlines, and stay productive with jetmyprojects. Simple, fast, cloud-based project management.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{% static 'ImageFaviconx.png' %}">
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{% static 'css/global_styles.css' %}?v=5">
+</head>
+
+<body>
+    <header class="navbar navbar-expand-lg top-branding">
+        <div class="container-fluid p-0">
+            <a href="/" class="d-flex align-items-center text-decoration-none gap-3">
+                <img src="{% static 'ImageLogox.png' %}" alt="Logo" class="logo-custom">
+                <span class="brand-green-text">JetMyProjects<sup>&reg;</sup></span>
+            </a>
+            <div class="ms-auto brand-orange-title">Dashboard</div>
+        </div>
+    </header>
+
+    <nav class="navbar navbar-expand-lg nav-header-row">
+        <!-- ... (navbar content) ... -->
+        <div class="container-fluid p-0">
+            <span class="fs-5 text-white" id="userGreeting">Hello, !</span>
+            <button class="navbar-toggler border-white" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#userNavOffcanvas" aria-controls="userNavOffcanvas">
+                <i class="fas fa-bars text-white"></i>
+            </button>
+
+            <!-- Desktop Nav -->
+            <div class="collapse navbar-collapse" id="userNav">
+                <div class="navbar-nav ms-auto gap-lg-3">
+                    <a class="nav-link active-link" href="/dashboard/">Dashboard</a>
+                    <a class="nav-link" href="/projects/tasks/active/">Projects</a>
+                    <a class="nav-link" href="/dashboard/profile/">Profile</a>
+                    <a class="nav-link" href="{% url 'payment_history' %}">Billing History</a>
+                    <a class="nav-link" href="/dashboard/sign-out/">Sign Out</a>
+                </div>
+            </div>
+
+            <!-- Mobile Offcanvas -->
+            <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="userNavOffcanvas"
+                aria-labelledby="userNavOffcanvasLabel">
+                <div class="offcanvas-header bg-light border-bottom">
+                    <h5 class="offcanvas-title fw-bold text-dark" id="userNavOffcanvasLabel">Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body d-flex flex-column">
+                    <div class="navbar-nav w-100 gap-lg-3 mb-auto">
+                        <a class="nav-link text-dark border-bottom py-3 active-link text-primary fw-bold"
+                            href="/dashboard/">Dashboard</a>
+                        <a class="nav-link text-dark border-bottom py-3" href="/projects/tasks/active/">Projects</a>
+                        <a class="nav-link text-dark border-bottom py-3" href="/dashboard/profile/">Profile</a>
+                        <a class="nav-link text-dark border-bottom py-3" href="{% url 'payment_history' %}">Billing
+                            History</a>
+                        <a class="nav-link text-dark py-3" href="/dashboard/sign-out/">Sign Out</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <main class="content-area">
+            <div class="container-fluid">
+                <h2 class="section-title">Dashboard Overview</h2>
+
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="icon-box text-white" style="background-color: var(--brand-green);"><i
+                                    class="fas fa-project-diagram"></i></div>
+                            <h6 class="text-muted">Active Projects</h6>
+                            <h2 class="fw-bold" id="activeProjectsCount">-</h2>
+                            <p class="mb-0 text-success"><i class="fas fa-arrow-up"></i> <span
+                                    id="addedThisWeek">-</span>
+                                added this week</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card">
+                            <div class="icon-box text-white" style="background-color: var(--brand-green);"><i
+                                    class="fas fa-clock"></i></div>
+                            <h6 class="text-muted">Upcoming Deadlines</h6>
+                            <h2 class="fw-bold" id="upcomingDeadlinesCount">-</h2>
+                            <p class="mb-0 text-danger" id="nextDeadlineText">Calculating...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="stat-card">
+                            <div class="icon-box text-white" style="background-color: var(--brand-green);"><i
+                                    class="fas fa-hdd"></i></div>
+                            <h6 class="text-muted">Storage Memory</h6>
+                            <h2 class="fw-bold" id="storagePercentText">-</h2>
+                            <div class="progress mt-2">
+                                <div class="progress-bar bg-success" id="storageProgressBar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted" id="storageDetailText">-</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-8">
+                        <div class="stat-card h-100">
+                            <h5 class="fw-bold mb-4">Critical Deadlines</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover border-top">
+                                    <thead>
+                                        <tr>
+                                            <th>Project</th>
+                                            <th>Deadline</th>
+                                            <th>Urgency</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="criticalTasksTableBody">
+                                        <tr>
+                                            <td colspan="3" class="text-center">Loading...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <a href="/projects/tasks/active/" class="btn btn-sm btn-brand-orange mt-2 spa-link">View All
+                                Projects</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card mb-4">
+                            <h5 class="fw-bold mb-3">Quick Actions</h5>
+                            <div class="d-grid gap-2">
+                                <a href="/projects/tasks/new/" class="btn btn-brand-orange spa-link"><i
+                                        class="fas fa-plus me-2"></i>Create
+                                    New Project</a>
+                                <a href="/projects/tasks/calendar/" class="btn btn-light border spa-link"><i
+                                        class="fas fa-calendar-alt me-2"></i> Calendar</a>
+                                <a href="/dashboard/usage/" class="btn btn-light border spa-link"><i
+                                        class="fas fa-folder-open me-2"></i>Manage Space</a>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <h5 class="fw-bold mb-3">Subscription Plan</h5>
+                            <p class="mb-1"><strong>Plan:</strong> <span id="planName">Loading...</span></p>
+                            <p class="text-muted small" id="planRenewalText">Checking subscription...</p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="stat-card mb-4">
+                            <h5 class="fw-bold mb-3">Recent Activity</h5>
+                            <ul class="list-unstyled small mb-0" id="activityList">
+                                <li class="text-muted">No recent activity.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script src="{% static 'js/api_client.js' %}"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initDashboardPage);
+                } else {
+                    initDashboardPage();
+                }
+
+                async function initDashboardPage() {
+                    // Failsafe: Ensure sidebar is removed (since Dashboard is full width)
+                    const existingSidebar = document.querySelector('.sidebar');
+                    if (existingSidebar) {
+                        existingSidebar.remove();
+                    }
+                    // --- Subscription Intent Handling (Frontend Fix) ---
+                    const subscribeIntent = localStorage.getItem('subscribe_intent');
+                    if (subscribeIntent === 'true') {
+                        // Check if user is already paid/active to avoid unnecessary redirect
+                        const planNameEl = document.getElementById('planName');
+
+                        console.log("Subscription Intent found. Redirecting to payment...");
+                        localStorage.removeItem('subscribe_intent'); // Consume the intent
+
+                        // Show visual feedback
+                        showNotification('Initiating subscription...', 'info');
+
+                        try {
+                            // We need a plan_id. Default logic in backend handles it if missing? 
+                            // The backend fallback "Pro Yearly Plan" search will handle it if we send nothing or specific ID.
+                            // Let's send a request to create session.
+                            const response = await ApiClient.fetch('/api/v1/payments/create-session/', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({}) // Default plan
+                            });
+
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (data.url) {
+                                    window.location.href = data.url;
+                                    return; // Stop other loading to fetch dashboard
+                                }
+                            } else {
+                                console.error("Failed to auto-create session");
+                                showNotification('Failed to start subscription. Please try manually.', 'error');
+                            }
+                        } catch (e) {
+                            console.error("Error auto-subscribing", e);
+                        }
+                    }
+                    // ---------------------------------------------------
+
+                    // Timezone Auto-Detection
+                    try {
+                        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                        if (tz) {
+                            // Fire and forget - silent update
+                            ApiClient.fetch('/api/v1/accounts/user/set-timezone/', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ timezone: tz })
+                            }).catch(err => console.error("Silent TZ Update failed", err));
+                        }
+                    } catch (e) {
+                        console.error("Timezone detection failed", e);
+                    }
+
+                    // Token check removed. ApiClient handles auth via cookies.
+                    try {
+                        const response = await ApiClient.fetch('/api/v1/dashboard/stats/');
+                        if (response.ok) {
+                            const data = await response.json();
+                            updateDashboard(data);
+                        } else {
+                            console.error('Failed to fetch dashboard data', response.status);
+                            showErrorState('Failed to load dashboard data. Please try refreshing.');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        showErrorState('Network error occurred. Please check your connection.');
+                    }
+                }
+
+                function showErrorState(msg) {
+                    // Replace loading text with error
+                    const ids = ['activeProjectsCount', 'upcomingDeadlinesCount', 'storagePercentText', 'planName'];
+                    ids.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.innerText = 'Error';
+                    });
+                    document.getElementById('nextDeadlineText').innerText = msg;
+                }
+
+                function updateDashboard(data) {
+                    // Update Welcome Message
+                    if (data.user_name) {
+                        const userGreeting = document.getElementById('userGreeting');
+                        if (userGreeting) userGreeting.innerText = `Hello, ${data.user_name}!`;
+                    }
+
+                    // 1. Active Projects
+                    document.getElementById('activeProjectsCount').innerText = data.active_count;
+                    document.getElementById('addedThisWeek').innerText = data.added_this_week;
+
+                    // 2. Upcoming Deadlines
+                    document.getElementById('upcomingDeadlinesCount').innerText = data.upcoming_count;
+                    if (data.next_deadline) {
+                        const date = new Date(data.next_deadline.date).toLocaleDateString();
+                        document.getElementById('nextDeadlineText').innerText = `Next: ${date} (${data.next_deadline.days_left} days left)`;
+                    } else {
+                        document.getElementById('nextDeadlineText').innerText = 'No upcoming deadlines';
+                    }
+
+                    // 3. Storage
+                    // Using placeholder data for now as per API
+                    const percentUsed = data.storage_percent || 0;
+                    const percentLeft = 100 - percentUsed;
+                    document.getElementById('storagePercentText').innerText = `${percentLeft}% Left`;
+                    document.getElementById('storageProgressBar').style.width = `${percentUsed}%`;
+                    const limitDisplay = data.storage_limit_mb < 1024
+                        ? `${data.storage_limit_mb}MB`
+                        : `${data.storage_total_gb}GB`;
+                    document.getElementById('storageDetailText').innerText = `${data.storage_used_mb}MB used of ${limitDisplay}`;
+
+                    // 3.5 Pinned Projects
+                    const pinnedCard = document.getElementById('pinnedProjectsCard');
+                    const pinnedList = document.getElementById('pinnedProjectsList');
+
+                    if (pinnedCard && pinnedList) {
+                        pinnedList.innerHTML = '';
+                        if (data.pinned_tasks && data.pinned_tasks.length > 0) {
+                            pinnedCard.style.display = 'block';
+                            data.pinned_tasks.forEach(task => {
+                                const item = document.createElement('a');
+                                item.href = `/projects/tasks/${task.id}/`;
+                                item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0';
+                                item.innerHTML = `
+                                <div class="ms-2">
+                                    <div class="fw-bold text-dark">${task.project_name}</div>
+                                    <small class="text-muted"><i class="far fa-clock me-1"></i>${task.deadline_date}</small>
+                                </div>
+                                <i class="fas fa-chevron-right text-muted me-2 small"></i>
+                            `;
+                                pinnedList.appendChild(item);
+                            });
+                        } else {
+                            pinnedCard.style.display = 'none';
+                        }
+                    }
+
+                    // 4. Critical Tasks Table
+                    const tbody = document.getElementById('criticalTasksTableBody');
+                    tbody.innerHTML = '';
+
+                    if (data.critical_tasks.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" class="text-center">No upcoming critical tasks.</td></tr>';
+                    } else {
+                        data.critical_tasks.forEach(task => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                    <td>${task.project_name}</td>
+                    <td>${task.deadline_date}</td>
+                    <td><span class="badge ${task.badge_class}">${task.urgency}</span></td>
+                    `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    // 5. Plan Status
+                    const planEl = document.getElementById('planName');
+                    const isPaid = data.plan_name && data.plan_name !== 'Free Plan';
+
+                    if (isPaid) {
+                        planEl.innerText = 'Active';
+                        planEl.className = 'status-paid';
+                    } else {
+                        planEl.innerText = 'Inactive';
+                        planEl.className = 'text-muted';
+                    }
+
+                    if (data.plan_renewal) {
+                        const renewalDate = new Date(data.plan_renewal).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                        document.getElementById('planRenewalText').innerText = `Your plan renews on ${renewalDate}.`;
+                    } else {
+                        // For free tier or no expiry
+                        document.getElementById('planRenewalText').innerText = 'Upgrade to unlock more features.';
+                    }
+
+                    // 6. Recent Activity
+                    const activityList = document.getElementById('activityList');
+                    if (data.recent_activity && data.recent_activity.length > 0) {
+                        activityList.innerHTML = '';
+                        data.recent_activity.forEach(log => {
+                            const li = document.createElement('li');
+                            li.className = 'mb-2 pb-2 border-bottom activity-log-item';
+
+                            const date = new Date(log.timestamp);
+                            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                            li.innerHTML = `
+                            <div class="fw-bold text-dark">${log.action}</div>
+                            <div class="text-muted text-xs-custom">${date.toLocaleDateString()} at ${timeStr}</div>
+                        `;
+                            activityList.appendChild(li);
+                        });
+                    } else {
+                        activityList.innerHTML = '<li class="text-muted">No recent activity.</li>';
+                    }
+
+
+                }
+
+                // Logout Handler
+                async function handleLogout(event) {
+                    event.preventDefault();
+                    try {
+                        if (typeof ApiClient !== 'undefined') {
+                            await ApiClient.fetch('/api/v1/accounts/auth/logout/', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({})
+                            });
+                        }
+                    } catch (e) { }
+                    window.location.href = '/';
+                }
+            </script>
+        </main>
+    </div>
+</body>
+
+</html>

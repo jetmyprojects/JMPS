@@ -1,0 +1,106 @@
+﻿{% extends 'task_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Sign Out{% endblock %}
+
+{% block header_title %}Sign Out{% endblock %}
+
+{% block nav_active_projects %}{% endblock %}
+{% block nav_active_profile %}{% endblock %}
+
+{% block mobile_nav_active_projects %}{% endblock %}
+{% block mobile_nav_active_profile %}{% endblock %}
+
+{% block mobile_project_types %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .section-title {
+        color: #BE5103;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Unified Brand Buttons */
+    .btn-brand-orange {
+        background-color: #BE5103;
+        color: white !important;
+        font-weight: 600;
+        padding: 10px 30px;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        /* width: fit-content; Removed to allow stretch */
+        /* width: 100%; */
+        /* max-width: 400px; */
+        min-width: 200px;
+        /* Ensure decent clickable area but not full width */
+        transition: all 0.3s ease;
+    }
+
+    .btn-brand-orange:hover {
+        background-color: #4EA72E;
+        /* Brand Green hover as per original */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <h2 class="section-title">Are you sure you want to Sign Out?</h2>
+    <div class="d-flex flex-column gap-3" style="width: fit-content;">
+        <button type="button" onclick="handleLogout(event)" class="btn btn-brand-orange">Yes, I want to take a
+            break</button>
+        <a href="/dashboard/" class="btn btn-brand-orange spa-link">No, stay on the page</a>
+    </div>
+    <script>
+        // handleLogout is already in task_base.html, but the specific behavior here (updating button text) might be desired.
+        // The base handleLogout is generic.
+        // Let's override/redefine it here or just use the base one?
+        // The base one redirects immediately.
+        // This one changes text "Signing out..." then calls logout.
+        // I can redefine it here to override the base function in scope? 
+        // Yes, defining it here will overwrite the global function for this page.
+
+        async function handleLogout(event) {
+            event.preventDefault();
+            const btn = event.target;
+            btn.innerHTML = 'Signing out...';
+            btn.disabled = true;
+
+            try {
+                if (typeof ApiClient !== 'undefined') {
+                    await ApiClient.fetch('/api/v1/accounts/auth/logout/', {
+                        method: 'POST',
+                        body: JSON.stringify({}) // Cookie based
+                    });
+                }
+            } catch (e) { console.error("API Logout failed, falling back to session logout", e); }
+            // localStorage.removeItem('access_token');
+            // localStorage.removeItem('refresh_token');
+
+            // Redirect to Backend Logout Handler to ensure Session is destroyed
+            window.location.href = '/dashboard/logout/';
+        }
+
+        // JS to set active link for Sign Out since base template didn't have a block
+        document.addEventListener('DOMContentLoaded', () => {
+            // Desktop
+            const desktopLinks = document.querySelectorAll('#userNav .nav-link');
+            desktopLinks.forEach(link => {
+                if (link.href.includes('sign-out')) link.classList.add('active-link');
+            });
+
+            // Mobile
+            const mobileLinks = document.querySelectorAll('.offcanvas-body .nav-link');
+            mobileLinks.forEach(link => {
+                if (link.href.includes('sign-out')) {
+                    link.classList.add('text-primary', 'fw-bold', 'active-link');
+                }
+            });
+        });
+    </script>
+</main>
+{% endblock %}

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/static/ImageFaviconx.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.stripe_id }} | Jetmyprojects</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 40px;
+        }
+
+        .invoice-box {
+            max-width: 800px;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #eee;
+            box-shadow: 0 0 10px rgba(0, 0, 0, .15);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .details {
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            line-height: inherit;
+            text-align: left;
+            border-collapse: collapse;
+        }
+
+        table td {
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        table tr td:nth-child(2) {
+            text-align: right;
+        }
+
+        .heading td {
+            background: #eee;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+
+        .item td {
+            border-bottom: 1px solid #eee;
+        }
+
+        .total td {
+            border-top: 2px solid #333;
+            font-weight: bold;
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            body {
+                padding: 0;
+            }
+
+            .invoice-box {
+                box-shadow: none;
+                border: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="invoice-box">
+        <div class="header">
+            <div class="logo">JetMyProjects</div>
+            <div>
+                {% if invoice.amount < 0 %} <strong>REFUND RECEIPT</strong><br>
+                    Reference #: {{ invoice.stripe_id }}<br>
+                    {% else %}
+                    Invoice #: {{ invoice.stripe_id }}<br>
+                    {% endif %}
+                    Created: {{ invoice.created_at|date:"F j, Y" }}
+            </div>
+        </div>
+
+        <div class="details">
+            <strong>Billed To:</strong><br>
+            {{ invoice.user.get_full_name|default:invoice.user.email }}<br>
+            {{ invoice.user.email }}
+        </div>
+
+        <table>
+            <tr class="heading">
+                <td>Item</td>
+                <td>Price</td>
+            </tr>
+            <tr class="item">
+                <td>
+                    {% if invoice.amount == 0 %}
+                    Trial Subscription
+                    {% elif invoice.amount < 0 %} Refund for Subscription {% else %} Premium Subscription {% endif %}
+                        </td>
+                <td>${{ invoice.amount }}</td>
+            </tr>
+            <tr class="total">
+                <td></td>
+                <td>
+                    {% if invoice.amount < 0 %} Total Refund: ${{ invoice.amount }} {% else %} Total: ${{ invoice.amount
+                        }} {% endif %} </td>
+            </tr>
+        </table>
+
+        {% if invoice.amount < 0 %} <div
+            style="margin-top: 30px; padding: 15px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; border-radius: 4px;">
+            <strong>Note:</strong> This refund has been initiated immediately. However, it may take <strong>5-10
+                business days</strong> for the funds to appear on your bank statement depending on your bank's
+            processing time.
+    </div>
+    {% endif %}
+
+    <div class="no-print" style="margin-top: 20px; text-align: center;">
+        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer;">Print Receipt</button>
+    </div>
+    </div>
+</body>
+
+</html>

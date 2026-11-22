@@ -1,0 +1,221 @@
+{% extends 'BaseAdmin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Inquiry Details</h1>
+    <div>
+        <a href="{% url 'admin_contact_inquiries' %}" class="d-none d-sm-inline-block btn btn-sm text-white shadow-sm"
+            style="background-color: #BE5103; border-color: #BE5103;">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12">
+        <!-- Inquiry Card mimicking Email Template BUT Landscape -->
+        <div class="card shadow mb-4">
+            <div class="card-body p-0">
+                <!-- Wrapper Table (mimics email body) -->
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                    style="background-color: #f4f7f6; padding: 40px 20px;">
+                    <tr>
+                        <td align="center">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                                style="max-width: 1200px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <!-- Header -->
+                                <tr>
+                                    <td style="background-color: #BE5103; padding: 30px; text-align: center;">
+                                        <table role="presentation" cellpadding="0" cellspacing="0"
+                                            style="margin: 0 auto;">
+                                            <tr>
+                                                <td style="padding-right: 15px; vertical-align: middle;">
+                                                    <img src="{% static 'ImageLogox.png' %}" alt="JetMyProjects Logo"
+                                                        style="height: 45px; display: block;">
+                                                </td>
+                                                <td style="vertical-align: middle;">
+                                                    <h1
+                                                        style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
+                                                        JetMyProjects<sup style="font-size: 14px;">®</sup></h1>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- Content -->
+                                <tr>
+                                    <td style="padding: 40px 30px; text-align: left;">
+                                        <!-- Header Section -->
+                                        <div class="d-flex justify-content-between align-items-start mb-4">
+                                            <div>
+                                                <h2
+                                                    style="margin: 0 0 10px 0; color: #BE5103; font-size: 24px; font-weight: 700;">
+                                                    Contact Form Submission</h2>
+                                                <p style="margin: 0; color: #666; font-size: 14px;">
+                                                    <strong>Submitted:</strong>
+                                                    {{ inquiry.created_at|date:"F j, Y, g:i a" }}
+
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <span
+                                                    class="badge bg-{% if inquiry.status == 'NEW' %}success{% else %}secondary{% endif %}"
+                                                    style="font-size: 14px; padding: 8px 16px; border-radius: 20px;">
+                                                    {{ inquiry.status }} INQUIRY
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {% if inquiry.status == 'REPLIED' %}
+                                        <div class="alert alert-info mb-4">
+                                            <i class="fas fa-check-circle"></i> You replied to this inquiry on
+                                            {{ inquiry.replied_at|date:"M d, Y" }}.
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Two Column Layout for Details -->
+                                        <div class="row">
+                                            <!-- Contact Information -->
+                                            <div class="col-md-12 mb-4">
+                                                <div
+                                                    style="background-color: #f4f7f6; border-radius: 14px; padding: 27px; border-left: 4px solid #BE5103;">
+                                                    <table role="presentation" width="100%" cellpadding="0"
+                                                        cellspacing="0">
+                                                        <tr>
+                                                            <td style="vertical-align: top;">
+                                                                <h3
+                                                                    style="margin: 0 0 20px 0; color: #BE5103; font-size: 18px; font-weight: 600;">
+                                                                    Contact Details</h3>
+                                                                <table role="presentation" width="100%" cellpadding="0"
+                                                                    cellspacing="0"
+                                                                    style="color: #333; font-size: 15px; line-height: 2;">
+                                                                    <colgroup>
+                                                                        <col style="width: 100px;">
+                                                                        <col style="width: auto;">
+                                                                    </colgroup>
+                                                                    <tr>
+                                                                        <td
+                                                                            style="padding: 8px 0; font-weight: 600; color: #666;">
+                                                                            Name:</td>
+                                                                        <td style="padding: 8px 0; font-weight: 500;">
+                                                                            {{ inquiry.first_name }}
+                                                                            {{inquiry.last_name }}
+                                                                        </td>
+
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td
+                                                                            style="padding: 8px 0; font-weight: 600; color: #666;">
+                                                                            Email:</td>
+                                                                        <td style="padding: 8px 0;">
+                                                                            <a href="mailto:{{ inquiry.email }}"
+                                                                                style="color: #333; text-decoration: none; font-weight: 500;">
+                                                                                {{ inquiry.email }}</a>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td
+                                                                            style="padding: 8px 0; font-weight: 600; color: #666;">
+                                                                            Phone:</td>
+                                                                        <td style="padding: 8px 0;">
+                                                                            <a href="tel:{{ inquiry.phone }}"
+                                                                                style="color: #BE5103; text-decoration: none; font-weight: 500;">
+                                                                                {{ inquiry.phone }}</a>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+
+                                        <!-- Message Content -->
+                                        <div
+                                            style="background-color: #f4f7f6; border-radius: 14px; padding: 27px; border-left: 4px solid #4e73df; margin-bottom: 30px;">
+                                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td>
+                                                        <h3
+                                                            style="margin: 0 0 15px 0; color: #4e73df; font-size: 18px; font-weight: 600;">
+                                                            Inquiry Message</h3>
+                                                        <p
+                                                            style="margin: 0; color: #333; font-size: 15px; line-height: 1.8; ">
+                                                            {{ inquiry.message }}</p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <!-- Action Buttons -->
+                                        <div class="text-center mt-4">
+                                            <button type="button" class="btn btn-lg px-5 text-white"
+                                                style="background-color: #BE5103; border-color: #BE5103;"
+                                                data-bs-toggle="modal" data-bs-target="#replyModal">
+                                                <i class="fas fa-reply me-2"></i> Reply to User
+                                            </button>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                                <!-- Footer -->
+                                <tr>
+                                    <td
+                                        style="background-color: #f4f7f6; padding: 20px 30px; text-align: center; border-top: 1px solid #eee;">
+                                        <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">Admin Panel View
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+<!-- Reply Modal -->
+<div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background-color: #BE5103;">
+                <h5 class="modal-title" id="replyModalLabel">Reply to {{ inquiry.first_name }} {{ inquiry.last_name }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <form action="{% url 'admin_contact_inquiry_reply' inquiry.id %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" style="color: #666;">To:</label>
+                        <input type="text" class="form-control-plaintext" readonly value="{{ inquiry.email }}"
+                            style="font-weight: 500;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label fw-bold" style="color: #BE5103;">Your Reply:</label>
+                        <textarea class="form-control" id="message" name="message" rows="10" required
+                            placeholder="Type your reply here... it will be sent via email using the standard template."
+                            style="border-radius: 8px; border: 1px solid #ccc;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background-color: #f8f9fa;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn text-white"
+                        style="background-color: #4EA72E; border-color: #4EA72E;">
+                        <i class="fas fa-paper-plane me-2"></i> Send Reply
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

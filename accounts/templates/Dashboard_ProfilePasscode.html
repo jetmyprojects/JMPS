@@ -1,0 +1,149 @@
+﻿{% extends 'task_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Verify Email Change{% endblock %}
+
+{% block header_title %}Profile{% endblock %}
+
+{% block nav_active_projects %}{% endblock %}
+{% block nav_active_profile %}active-link{% endblock %}
+
+{% block mobile_nav_active_projects %}{% endblock %}
+{% block mobile_nav_active_profile %}active-link text-primary fw-bold{% endblock %}
+
+{% block mobile_project_types %}{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <!-- Title Section -->
+    <h2 class="section-title brand-orange-title" style="color: #BE5103; font-weight: 700; margin-bottom: 1.5rem;">Verify
+        Changes</h2>
+
+    <div class="verify-container">
+        <p class="text-muted mb-4">We sent a verification code to <span id="email-display"
+                class="fw-bold text-dark">your new email address</span>. Please enter it below.
+        </p>
+
+        <form id="otpForm" onsubmit="return false;">
+            <div class="mb-3">
+                <label for="passcodeField" class="form-label fw-bold">Enter Passcode</label>
+                <input type="password" class="form-control passcode-input-custom" id="passcodeField" required
+                    maxlength="6" style="padding: 0.75rem;">
+            </div>
+
+            <div class="mb-4 form-check">
+                <input type="checkbox" class="form-check-input" id="showPasscode">
+                <label class="form-check-label" for="showPasscode">Show Passcode</label>
+            </div>
+
+            <button type="submit" class="btn btn-brand-orange w-100 py-2 mb-3" id="submitBtn"
+                style="background-color: #BE5103; color: white; border: none; font-weight: 600;">Submit</button>
+
+            <div id="countdown-area">
+                <a href="#" id="resendLink" class="resend-link-custom" onclick="resendCode(event)"
+                    style="color: #BE5103; text-decoration: none;">Resend
+                    Passcode Now</a>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- 4. Form Logic ---
+    const passcodeField = document.getElementById('passcodeField');
+    const showPasscode = document.getElementById('showPasscode');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('otpForm');
+
+    // 0. Set Email Display
+    const urlParams = new URLSearchParams(window.location.search);
+    const email = urlParams.get('email') || urlParams.get('new_email');
+    if (email) {
+        const emailDisplay = document.getElementById('email-display');
+        if (emailDisplay) emailDisplay.textContent = email;
+    }
+
+    // Toggle Visibility
+    if (showPasscode) {
+        showPasscode.addEventListener('change', () => {
+            passcodeField.type = showPasscode.checked ? 'text' : 'password';
+        });
+    }
+
+    // Submit OTP
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const otp = passcodeField.value;
+
+            if (!otp || otp.length < 6) {
+                showNotification('Please enter a valid 6-digit passcode.', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Verifying...';
+            const token = localStorage.getItem('access_token'); // Ensure token is available, though base handles check
+
+            try {
+                // Using generic fetch or ApiClient? Original used fetch with token.
+                // task_base includes ApiClient. Let's use it.
+                // Original URL: '/api/v1/accounts/email-change/verify/'
+                const response = await ApiClient.fetch('/api/v1/accounts/email-change/verify/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ otp: otp })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showNotification('Email verified successfully!', 'success');
+                    setTimeout(() => window.location.href = '/dashboard/profile/', 1500);
+                } else {
+                    showNotification(data.error || 'Verification failed.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit';
+                }
+            } catch (err) {
+                console.error(err);
+                showNotification('Network error. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+            }
+        });
+    }
+
+    // --- 5. Resend Logic ---
+    async function resendCode(event) {
+        event.preventDefault();
+        const link = event.target;
+        const originalText = link.textContent;
+
+        link.style.pointerEvents = 'none';
+        link.textContent = 'Sending...';
+
+        try {
+            const response = await ApiClient.fetch('/api/v1/accounts/email-change/resend/', {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                showNotification('Passcode resent!', 'success');
+            } else {
+                showNotification('Could not resend code. Please try updating profile again.', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            showNotification('Error resending code.', 'error');
+        } finally {
+            link.textContent = 'Resend Passcode Now';
+            link.style.pointerEvents = 'auto';
+        }
+    }
+</script>
+{% endblock %}

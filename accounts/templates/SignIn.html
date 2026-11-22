@@ -1,0 +1,449 @@
+{% extends 'account_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Sign In{% endblock %}
+
+{% block css_framework %}
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    brand: {
+                        green: '#4EA72E',
+                        orange: '#BE5103',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    }
+                },
+                fontFamily: {
+                    sans: ['Outfit', 'sans-serif'],
+                },
+                keyframes: {
+                    slideIn: {
+                        '0%': { transform: 'translateX(100%)', opacity: '0' },
+                        '100%': { transform: 'translateX(0)', opacity: '1' },
+                    }
+                },
+                animation: {
+                    slideIn: 'slideIn 0.3s ease-out forwards',
+                }
+            }
+        }
+    }
+</script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="icon" type="image/png" href="{% static 'ImageFaviconx.png' %}">
+
+<!-- Global CSS -->
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block body_class %}min-h-screen font-sans bg-white overflow-hidden{% endblock %}
+
+{% block toast_container %}
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+{% endblock %}
+
+{% block content %}
+<div class="flex h-screen w-full">
+    <!-- Left Side: Image -->
+    <div class="hidden lg:flex w-1/2 relative bg-slate-900 items-center justify-center overflow-hidden">
+        <!-- Background Image -->
+        <div class="absolute inset-0 z-0">
+            <img src="{% static 'ImageSignIn.jpg' %}"
+                class="w-full h-full object-cover opacity-60 transition-transform duration-[20s] hover:scale-110"
+                alt="Workspace">
+        </div>
+
+        <!-- Logo (Top Left) -->
+        <div class="absolute top-5 left-5 z-20">
+            <a href="{% url 'index' %}" class="logo" target="_blank"
+                style="display: flex; align-items: center; text-decoration: none;">
+                <img src="{% static 'ImageLogox.png' %}" alt="JetMyProjects Logo" style="height: 32px;">
+                JetMyProjects
+            </a>
+        </div>
+
+        <!-- Overlay Content -->
+        <div class="relative z-10 px-16 text-center text-white max-w-2xl">
+            <h2 class="text-4xl xl:text-5xl font-bold mb-4 leading-tight">Welcome Back!</h2>
+            <p class="text-lg text-slate-200 leading-relaxed">Sign in to continue managing your projects and
+                deadlines efficiently.</p>
+        </div>
+
+        <!-- Gradient Overlay -->
+        <div
+            class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent z-0 pointer-events-none">
+        </div>
+    </div>
+
+    <!-- Right Side: Form -->
+    <div class="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 bg-white h-full relative">
+        <!-- Mobile Logo -->
+        <div class="lg:hidden absolute top-6 left-6">
+            <a href="{% url 'index' %}">
+                <img src="{% static 'ImageLogox.png' %}" alt="Logo" class="h-10">
+            </a>
+        </div>
+
+        <div class="w-full max-w-[450px] space-y-7">
+            <!-- Header -->
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-slate-800 mb-1.5">Sign In</h1>
+                <p class="text-slate-500 text-base">Welcome back! Please enter your details.</p>
+            </div>
+
+            <!-- Form -->
+            <form action="#" onsubmit="return false;" id="loginForm" class="space-y-4">
+
+                <!-- Email Input -->
+                <div class="relative group">
+                    <input type="email" id="floatingEmail" name="email_signin" required maxlength="100" class="peer w-full px-4 pt-6 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none 
+               focus:border-brand-green focus:bg-white transition-all text-slate-800 
+               placeholder-transparent text-base" placeholder="Email Address">
+                    <label for="floatingEmail" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none
+               peer-placeholder-shown:top-1/2
+               peer-placeholder-shown:-translate-y-1/2
+               peer-placeholder-shown:text-base
+
+               peer-focus:top-1
+               peer-focus:translate-y-0
+               peer-focus:text-sm
+               peer-focus:text-brand-green
+
+               peer-[&:not(:placeholder-shown)]:top-1
+               peer-[&:not(:placeholder-shown)]:translate-y-0
+               peer-[&:not(:placeholder-shown)]:text-sm
+               peer-[&:not(:placeholder-shown)]:text-slate-500
+
+               bg-white px-1">
+                        Email Address
+                    </label>
+                </div>
+
+                <!-- Password Input -->
+                <div class="relative group" id="passwordGroup">
+                    <input type="password" id="floatingPassword" name="password_signin" required maxlength="128" class="peer w-full px-4 pt-6 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none 
+               focus:border-brand-green focus:bg-white transition-all text-slate-800 
+               placeholder-transparent text-base" placeholder="Password">
+                    <label for="floatingPassword" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none
+               peer-placeholder-shown:top-1/2
+               peer-placeholder-shown:-translate-y-1/2
+               peer-placeholder-shown:text-base
+
+               peer-focus:top-1
+               peer-focus:translate-y-0
+               peer-focus:text-sm
+               peer-focus:text-brand-green
+
+               peer-[&:not(:placeholder-shown)]:top-1
+               peer-[&:not(:placeholder-shown)]:translate-y-0
+               peer-[&:not(:placeholder-shown)]:text-sm
+               peer-[&:not(:placeholder-shown)]:text-slate-500
+
+               bg-white px-1">
+                        Password
+                    </label>
+                </div>
+
+                <!-- OTP Input (Hidden Initially) -->
+                <div class="relative group hidden" id="otpGroup">
+                    <input type="text" id="floatingOTP" name="otp_signin" maxlength="6" class="peer w-full px-4 pt-6 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none 
+               focus:border-brand-green focus:bg-white transition-all text-slate-800 
+               placeholder-transparent text-base" placeholder="Enter OTP">
+                    <label for="floatingOTP" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none
+               peer-placeholder-shown:top-1/2
+               peer-placeholder-shown:-translate-y-1/2
+               peer-placeholder-shown:text-base
+
+               peer-focus:top-1
+               peer-focus:translate-y-0
+               peer-focus:text-sm
+               peer-focus:text-brand-green
+
+               peer-[&:not(:placeholder-shown)]:top-1
+               peer-[&:not(:placeholder-shown)]:translate-y-0
+               peer-[&:not(:placeholder-shown)]:text-sm
+               peer-[&:not(:placeholder-shown)]:text-slate-500
+
+               bg-white px-1">
+                        One-Time Password
+                    </label>
+                    <p class="text-xs text-slate-500 mt-1">We sent a code to your email.</p>
+                </div>
+
+                <!-- Options: Remember Me & Show Password -->
+                <div class="flex items-center justify-between" id="optionsGroup">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="showPassword"
+                            class="custom-checkbox w-5 h-5 rounded border-slate-300 text-brand-green focus:ring-brand-green cursor-pointer">
+                        <label for="showPassword"
+                            class="ml-2 text-sm text-slate-500 cursor-pointer hover:text-slate-700 select-none">Show
+                            Password</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="remember_machine" name="remember_machine"
+                            class="custom-checkbox w-5 h-5 rounded border-slate-300 text-brand-green focus:ring-brand-green cursor-pointer"
+                            {% if remember_me_checked %}checked{% endif %}>
+                        <label for="remember_machine"
+                            class="ml-2 text-sm text-slate-500 cursor-pointer hover:text-slate-700 select-none">Remember
+                            Me</label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn"
+                    class="w-full py-3.5 rounded-xl bg-brand-orange text-white font-bold shadow-lg shadow-orange-200 transform transition-all duration-200 hover:shadow-xl hover:bg-orange-700 hover:-translate-y-1 active:translate-y-0 text-base">
+                    Sign In
+                </button>
+
+
+                <!-- Forgot Password Link -->
+                <div class="text-center pt-2">
+                    <a href="/forgot-password/"
+                        class="text-sm text-slate-400 hover:text-brand-orange hover:underline transition-all">Forgot
+                        Password?</a>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center pt-1">
+                    <p class="text-slate-500 text-sm">
+                        Don't have an account?
+                        <a href="/signup/"
+                            class="text-brand-green font-semibold hover:text-green-700 hover:underline transition-all">Sign
+                            Up</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toast Notification System
+    function showNotification(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            warning: 'bg-yellow-500',
+            info: 'bg-blue-500'
+        };
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+
+        toast.className = `${colors[type]} text-white px-6 py-4 rounded-xl shadow-xl flex items-center min-w-[300px] animate-[slideIn_0.3s_ease-out]`;
+        toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl mr-3"></i>
+                <span class="font-medium">${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-auto text-white/80 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-x-full', 'transition-all', 'duration-500');
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    }
+
+    // Form Logic
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordField = document.getElementById('floatingPassword');
+        const showPasswordCheckbox = document.getElementById('showPassword');
+        const submitBtn = document.getElementById('submitBtn');
+        const loginForm = document.getElementById('loginForm');
+
+        // Helper to get cookies (for CSRF)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Show/Hide Password
+        if (showPasswordCheckbox) {
+            showPasswordCheckbox.addEventListener('change', function () {
+                passwordField.type = this.checked ? 'text' : 'password';
+            });
+        }
+
+        // Form Submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('floatingEmail').value;
+            const password = document.getElementById('floatingPassword').value;
+            const otpField = document.getElementById('floatingOTP');
+            const otpGroup = document.getElementById('otpGroup');
+            const passwordGroup = document.getElementById('passwordGroup');
+            const optionsGroup = document.getElementById('optionsGroup');
+
+            const isOtpMode = !otpGroup.classList.contains('hidden');
+
+            // Loading State
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Processing...';
+
+            const csrfToken = getCookie('csrftoken');
+
+            try {
+                let response;
+                let data;
+
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken // Include CSRF Token
+                };
+
+                if (!isOtpMode) {
+                    // --- STEP 1: LOGIN ATTEMPT ---
+                    response = await fetch('/api/v1/accounts/auth/login/', {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify({
+                            email: email,
+                            password: password,
+                            remember_me: document.getElementById('remember_machine').checked
+                        })
+                    });
+                } else {
+                    // --- STEP 2: VERIFY OTP ---
+                    const otp = otpField.value;
+                    if (!otp) {
+                        showNotification('Please enter the OTP sent to your email.', 'error');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                        return;
+                    }
+                    response = await fetch('/api/v1/accounts/auth/verify-login-otp/', {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify({ otp: otp })
+                    });
+                }
+
+                // Parse response robustly
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    data = await response.json();
+                } else {
+                    // If not JSON, it's likely an error HTML page (500/403)
+                    const text = await response.text();
+                    console.error("Non-JSON Response:", text);
+                    throw new Error(`Server Error (${response.status}). Check console.`);
+                }
+
+                if (response.ok) {
+                    if (data.requires_otp) {
+                        // --- SWITCH TO OTP MODE ---
+                        showNotification(data.message || 'New device detected. Verification required.', 'warning');
+
+                        // UI Updates
+                        passwordGroup.classList.add('hidden');
+                        optionsGroup.classList.add('hidden'); // Hide Remember Me (it's stored in session)
+                        otpGroup.classList.remove('hidden');
+                        document.getElementById('floatingEmail').disabled = true; // Lock email
+
+                        submitBtn.innerHTML = 'Verify & Sign In';
+                        submitBtn.disabled = false;
+
+                        // Focus OTP
+                        otpField.focus();
+                        return; // Stop here, wait for second submit
+                    }
+
+                    // --- LOGIN SUCCESS ---
+                    showNotification('Login Successful!', 'success');
+
+                    if (data.user.is_premium || data.user.has_used_trial_or_subscription) {
+                        setTimeout(() => window.location.href = '/dashboard/', 1000);
+                    } else {
+                        // User not premium AND never used trial/sub -> redirect to payment
+                        submitBtn.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Redirecting to Payment...';
+                        try {
+                            const sessionResponse = await fetch('/api/v1/payments/create-session/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
+                                },
+                                body: JSON.stringify({ plan_id: 'default' })
+                            });
+
+                            if (sessionResponse.ok) {
+                                const sessionData = await sessionResponse.json();
+                                if (sessionData.url) {
+                                    window.location.href = sessionData.url;
+                                } else {
+                                    window.location.href = '/dashboard/';
+                                }
+                            } else {
+                                window.location.href = '/dashboard/';
+                            }
+                        } catch (err) {
+                            console.error('Session error:', err);
+                            window.location.href = '/dashboard/';
+                        }
+                    }
+                } else {
+                    // Handle Error
+                    let errorMessage = 'Action Failed.';
+
+                    if (data.non_field_errors) {
+                        errorMessage = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+                    } else if (data.detail) {
+                        errorMessage = data.detail;
+                    } else if (data.message) {
+                        errorMessage = data.message;
+                    } else if (data.email) {
+                        errorMessage = Array.isArray(data.email) ? data.email[0] : data.email;
+                    } else if (data.password) {
+                        errorMessage = Array.isArray(data.password) ? data.password[0] : data.password;
+                    } else if (data.error) {
+                        errorMessage = data.error;
+                    }
+
+                    showNotification(errorMessage, 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = isOtpMode ? 'Verify & Sign In' : 'Sign In';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification(error.message || 'Network error. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+    });
+</script>
+{% endblock %}

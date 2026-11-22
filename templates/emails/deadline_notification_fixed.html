@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Deadline Notification</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .email-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .email-header p {
+            margin: 8px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .email-body {
+            padding: 30px;
+        }
+
+        .greeting {
+            font-size: 16px;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+
+        .alert-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .alert-box strong {
+            color: #856404;
+            font-size: 16px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .alert-box p {
+            color: #856404;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .task-details {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .task-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .task-row:last-child {
+            border-bottom: none;
+        }
+
+        .task-label {
+            font-weight: bold;
+            color: #555555;
+            width: 140px;
+            font-size: 14px;
+        }
+
+        .task-value {
+            color: #333333;
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .deadline-highlight {
+            background-color: #dc3545;
+            color: #ffffff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .cta-button:hover {
+            opacity: 0.9;
+        }
+
+        .message-section {
+            color: #555555;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+
+        .email-footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777777;
+        }
+
+        .email-footer p {
+            margin: 5px 0;
+        }
+
+        .email-footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="email-header">
+            <h1>⏰ Project Deadline Reminder</h1>
+            <p>Don't miss your upcoming deadline</p>
+        </div>
+
+        <!-- Body -->
+        <div class="email-body">
+            <div class="greeting">
+                <p>Hello <strong>{{ task.user.username }}</strong>,</p>
+            </div>
+
+            <!-- Alert Box -->
+            <div class="alert-box">
+                <strong>⚠️ Deadline Approaching!</strong>
+                <p>This is a friendly reminder that your project deadline is coming up soon.</p>
+            </div>
+
+            <!-- Task Details -->
+            <div class="task-details">
+                <div class="task-row">
+                    <div class="task-label">Project Name:</div>
+                    <div class="task-value"><strong>{{ task.project_name }}</strong></div>
+                </div>
+
+                <div class="task-row">
+                    <div class="task-label">Due Date:</div>
+                    <div class="task-value">
+                        <span class="deadline-highlight">
+                            {{ task.deadline_date|date:"F j, Y" }}
+                            {% if task.deadline_time %}
+                            at {{ task.deadline_time|time:"h:i A" }}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="task-row">
+                    <div class="task-label">Time Remaining:</div>
+                    <div class="task-value">{{ time_remaining }}</div>
+                </div>
+            </div>
+
+            <!-- Message Section -->
+            {% if task.project_notes %}
+            <div class="message-section">
+                <p><strong>Project Description:</strong></p>
+                <p>{{ task.project_notes }}</p>
+            </div>
+            {% endif %}
+
+            <div class="divider"></div>
+
+            <!-- Call to Action -->
+            <div style="text-align: center;">
+                <a href="https://jetmyprojects.com/dashboard/" class="cta-button">Go to Dashboard</a>
+            </div>
+
+            <div class="message-section">
+                <p>If you have any questions, please contact on <a
+                        href="mailto:contact@jetmyprojects.com">contact@jetmyprojects.com</a>.</p>
+                <p><strong>Best regards,</strong><br>JetMyProjects</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+            <p><strong>JetMyProjects</strong></p>
+            <p>This is an automated notification. Please do not reply to this email.</p>
+            <p>Need help? <a href="https://jetmyprojects.com/#contact">Contact Support</a></p>
+            <p>
+                <a href="https://www.jetmyprojects.com/terms/" style="color: inherit; text-decoration: underline;">Terms
+                    of Service</a> |
+                <a href="https://www.jetmyprojects.com/privacy/"
+                    style="color: inherit; text-decoration: underline;">Privacy Policy</a>
+            </p>
+            <p>&copy; 2026 JetMyProjects. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+
+</html>

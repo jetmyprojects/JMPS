@@ -1,0 +1,143 @@
+{% extends 'task_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Billing History{% endblock %}
+
+{% block header_title %}Payment History{% endblock %}
+
+{% block nav_active_billing %}active-link{% endblock %}
+{% block mobile_nav_active_billing %}active-link text-primary fw-bold{% endblock %}
+
+{% block nav_active_projects %}{% endblock %}
+{% block mobile_nav_active_projects %}{% endblock %}
+
+{% block mobile_project_types %}
+<!-- Empty block to remove "Project Types" filter button on mobile -->
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-paid {
+        color: #10b981;
+        background: #ecfdf5;
+        padding: 6px 12px;
+        border-radius: 99px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-brand-orange {
+        background-color: var(--brand-orange);
+        color: white !important;
+        font-weight: 600;
+        padding: 10px 30px;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-brand-orange:hover {
+        background-color: var(--brand-green);
+    }
+
+    .table thead {
+        background-color: #f1f3f5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="section-title mb-0">Billing History</h2>
+        <!-- Hidden config for JS -->
+        <div id="billing-config" data-cancel-url="/api/v1/billing/cancel/" style="display:none;"></div>
+        <div id="cancel-btn-container" class="d-flex align-items-center gap-2"></div>
+    </div>
+
+    <div class="table-responsive mb-5">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Expiry</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Invoice</th>
+                </tr>
+            </thead>
+            <tbody id="invoice-tbody">
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Fetching your billing records...</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div id="paginationControls" class="d-flex justify-content-center gap-2 mb-5">
+    </div>
+
+
+    <div class="modal fade" id="renewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Renew Subscription</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="renewDiscountCode" class="form-label">Do you have a discount code?</label>
+                    <div class="input-group">
+                        <input type="text" id="renewDiscountCode" class="form-control"
+                            placeholder="Enter Code (e.g. SAVE20)">
+                        <button class="btn btn-outline-secondary" type="button" id="btnVerifyCode"
+                            onclick="verifyDiscount()">Apply</button>
+                    </div>
+                    <div id="renewAlert" class="alert alert-danger mt-2 d-none p-2 small"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" onclick="processRenewal(true)">Skip</button>
+                    <button type="button" class="btn btn-brand-orange" onclick="processRenewal(false)">Renew
+                        Subscription</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Cancel Trial?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to end your trial ?</p>
+                    <p class="small text-muted">You will no longer have access to premium features.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep It</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmCancelSubscription()">Yes,
+                        Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/billing.js' %}?v=11"></script>
+
+</main>
+{% endblock %}

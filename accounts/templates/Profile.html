@@ -1,0 +1,294 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jetmyprojects | Smart Project & Deadline Tracker</title>
+    <meta name="description"
+        content="Manage projects, track deadlines, and stay productive with jetmyprojects. Simple, fast, cloud-based project management.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{% static 'ImageFaviconx.png' %}">
+    <link rel="stylesheet" href="{% static 'css/global_styles.css' %}">
+
+
+</head>
+
+<body>
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3 toast-container-ontop"></div>
+    <header class="navbar navbar-expand-lg top-branding">
+        <div class="container-fluid p-0">
+            <a href="/" class="d-flex align-items-center text-decoration-none gap-3">
+                <img src="{% static 'ImageLogox.png' %}" alt="Logo" style="height: 45px;">
+                <span
+                    style="color: var(--brand-green); font-weight: 700; font-size: 1.5rem;">JetMyProjects<sup>&reg;</sup></span>
+            </a>
+            <div class="ms-auto" style="color: var(--brand-orange); font-weight: 700; font-size: 1.5rem;">Profile</div>
+        </div>
+    </header>
+
+    <nav class="navbar navbar-expand-lg nav-header-row">
+        <div class="container-fluid p-0">
+            <span class="fs-5 text-white">Hello, {{ user.first_name|default:'User' }}!</span>
+            <button class="navbar-toggler border-white" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#userNavOffcanvas" aria-controls="userNavOffcanvas">
+                <i class="fas fa-bars text-white"></i>
+            </button>
+
+            <!-- Desktop Nav -->
+            <div class="collapse navbar-collapse" id="userNav">
+                <div class="navbar-nav ms-auto gap-lg-3">
+                    <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                    <a class="nav-link" href="{% url 'task-list-active' %}">Projects</a>
+                    <a class="nav-link active-link" href="{% url 'fe_profile' %}">Profile</a>
+                    <a class="nav-link" href="{% url 'payment_history' %}">Billing History</a>
+                    <a class="nav-link" href="{% url 'fe_signout_confirm' %}">Sign Out</a>
+                </div>
+            </div>
+
+            <!-- Mobile Offcanvas -->
+            <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="userNavOffcanvas"
+                aria-labelledby="userNavOffcanvasLabel">
+                <div class="offcanvas-header bg-light border-bottom">
+                    <h5 class="offcanvas-title fw-bold text-dark" id="userNavOffcanvasLabel">Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body d-flex flex-column">
+                    <div class="navbar-nav w-100 gap-lg-3 mb-auto">
+                        <a class="nav-link text-dark border-bottom py-3" href="{% url 'dashboard' %}">Dashboard</a>
+                        <a class="nav-link text-dark border-bottom py-3"
+                            href="{% url 'task-list-active' %}">Projects</a>
+                        <a class="nav-link text-dark border-bottom py-3 active-link text-primary fw-bold"
+                            href="{% url 'fe_profile' %}">Profile</a>
+                        <a class="nav-link text-dark border-bottom py-3" href="{% url 'payment_history' %}">Billing
+                            History</a>
+                        <a class="nav-link text-dark py-3" href="{% url 'fe_signout_confirm' %}">Sign Out</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Buttons (Style from Billing History / Task Base) -->
+    <div class="d-lg-none px-3 pt-3 pb-3">
+        <div class="row g-2">
+            <div class="col-6">
+                <!-- Toggle Button for Dropdown -->
+                <button class="mobile-nav-btn btn-white mb-0 h-100" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#mobileDropdownContent" aria-expanded="false" aria-controls="mobileDropdownContent">
+                    <span class="text-truncate"><i class="fas fa-th-list me-2 text-secondary"></i></span>
+                    <i class="fas fa-chevron-down ms-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown Content (Hidden by default) -->
+        <div class="collapse mobile-dropdown-container mt-2" id="mobileDropdownContent">
+            <a href="{% url 'task-create' %}" class="sidebar-item"><i class="fas fa-plus-circle me-2"></i> New
+                Project</a>
+            <a href="/projects/tasks/calendar/" class="sidebar-item"><i class="fas fa-calendar-alt me-2"></i>
+                Calendar</a>
+            <a href="{% url 'space_used' %}" class="sidebar-item"><i class="fas fa-battery-three-quarters me-2"></i>
+                Space Used</a>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <!-- Desktop Sidebar (Hidden on Mobile) -->
+        <aside class="sidebar d-none d-lg-block">
+            <a href="{% url 'task-create' %}" class="sidebar-item"><i class="fas fa-plus-circle me-2"></i> New
+                Project</a>
+            <a href="/projects/tasks/calendar/" class="sidebar-item"><i class="fas fa-calendar-alt me-2"></i>
+                Calendar</a>
+            <a href="{% url 'space_used' %}" class="sidebar-item"><i class="fas fa-battery-three-quarters me-2"></i>
+                Space Used</a>
+        </aside>
+
+        <main class="content-area">
+            <h2 class="section-title profile-header">Profile Details</h2>
+            <div class="bg-white p-4 rounded-3 shadow-sm" style="max-width: 700px;">
+                <div class="profile-row">
+                    <span class="profile-label">First Name</span>
+                    <span class="profile-value">User First Name</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Last Name</span>
+                    <span class="profile-value">User Last Name</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Organization</span>
+                    <span class="profile-value">User Organization</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Zip Code</span>
+                    <span class="profile-value">User Zip Code</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Sign In Email</span>
+                    <span class="profile-value">User Email</span>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-label">Timezone</span>
+                    <span class="profile-value">User Timezone</span>
+                </div>
+
+                <div class="d-flex flex-column align-items-start mt-5">
+                    <a href="/dashboard/profile/edit/" id="editProfileBtn"
+                        class="btn btn-brand-orange rounded-2 w-auto px-5 py-2 mb-3 spa-link">Edit</a>
+                    <button type="button" class="btn btn-outline-red rounded-2 w-auto px-4 py-2" data-bs-toggle="modal"
+                        data-bs-target="#deleteAccountModal">
+                        Delete My Account
+                    </button>
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title text-danger fw-bold">Delete Account</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">Are you sure you want to delete your account? This action is
+                                <strong>irreversible</strong> and will permanently delete all your projects and
+                                data.
+                            </p>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" onclick="deleteAccount()">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initProfilePage);
+                } else {
+                    initProfilePage();
+                }
+
+                async function initProfilePage() {
+                    // Auth Check Removed: ApiClient handles redirection on 401
+                    try {
+                        const response = await ApiClient.fetch('/api/v1/accounts/user/profile/');
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            // Populate fields
+                            const details = document.querySelectorAll('.profile-value');
+                            if (details.length >= 5) {
+                                details[0].textContent = data.first_name || '-';
+                                details[1].textContent = data.last_name || '-';
+                                details[2].textContent = data.organisation_name || '-';
+                                details[3].textContent = data.zip_code || '-';
+                                details[4].textContent = data.email || '-';
+                                details[5].textContent = data.timezone || '-';
+                            }
+
+                            // Handle Edit Button for non-premium users
+                            const editBtn = document.getElementById('editProfileBtn');
+                            if (!data.is_premium && editBtn) {
+                                editBtn.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    showNotification('You must have an active subscription to edit your profile.', 'warning');
+                                });
+                            }
+
+                            // Base template handles greeting update
+                        } else {
+                            console.error('Failed to load profile');
+
+                            if (response.status === 401) window.location.href = '/';
+                        }
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+
+                function showNotification(message, type = 'info') {
+                    const toastContainer = document.querySelector('.toast-container');
+                    const toastId = 'toast-' + Date.now();
+
+                    const typeMap = {
+                        'success': 'bg-success text-white',
+                        'error': 'bg-danger text-white',
+                        'danger': 'bg-danger text-white',
+                        'warning': 'bg-warning text-dark',
+                        'info': 'bg-info text-dark'
+                    };
+                    const bgClass = typeMap[type] || 'bg-primary text-white';
+                    const iconMap = {
+                        'success': 'fa-check-circle',
+                        'error': 'fa-exclamation-circle',
+                        'danger': 'fa-exclamation-circle',
+                        'warning': 'fa-exclamation-triangle',
+                        'info': 'fa-info-circle'
+                    };
+                    const iconClass = iconMap[type] || 'fa-bell';
+                    const closeBtnClass = (type === 'warning' || type === 'info') ? 'btn-close' : 'btn-close btn-close-white';
+
+                    const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center ${bgClass} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas ${iconClass} me-2"></i> ${message}
+                        </div>
+                        <button type="button" class="btn-close ${closeBtnClass} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+                    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+                    const toastElement = document.getElementById(toastId);
+                    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+                    toast.show();
+
+                    toastElement.addEventListener('hidden.bs.toast', () => {
+                        toastElement.remove();
+                    });
+                }
+
+                async function deleteAccount() {
+                    try {
+                        const response = await ApiClient.fetch('/api/v1/accounts/user/delete/', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            // Logout cleanup
+                            localStorage.removeItem('access_token');
+                            localStorage.removeItem('refresh_token');
+
+                            // Set toast message for landing page
+                            localStorage.setItem('account_deleted_message', 'Your account has been deleted successfully.');
+
+                            window.location.replace('/');
+                        } else {
+                            const data = await response.json();
+                            console.error('Delete failed:', data);
+                            showNotification(data.error || data.detail || 'Failed to delete account.', 'error');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        showNotification('An error occurred: ' + e.message, 'error');
+                    }
+                }
+            </script>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/api_client.js' %}"></script>
+</body>
+
+</html>

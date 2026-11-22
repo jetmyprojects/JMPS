@@ -1,0 +1,132 @@
+{% extends 'task_base.html' %}
+{% load static %}
+{% block title %}JetMyProjects - Space Usage{% endblock %}
+{% block header_title %}Storage Usage{% endblock %}
+
+{% block sidebar %}
+<a href="{% url 'task-create' %}" class="sidebar-item"><i class="fas fa-plus-circle me-2"></i> New Project</a>
+<a href="/projects/tasks/calendar/" class="sidebar-item"><i class="fas fa-calendar-alt me-2"></i> Calendar</a>
+<a href="#" class="sidebar-item active-link"><i class="fas fa-hdd me-2"></i> Space Used</a>
+{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <h2 class="section-title mb-4" style="color: var(--brand-orange);">Space Used</h2>
+
+    <div class="bg-white p-4 rounded shadow-sm" style="max-width: 900px;">
+
+        <!-- Active Projects -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="fw-bold text-dark">Active Projects</span>
+                <span class="text-muted small" id="activeMb">0 MB</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-success" id="activeBar" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Draft Projects -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="fw-bold text-dark">Draft Projects</span>
+                <span class="text-muted small" id="draftMb">0 MB</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-success" id="draftBar" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Deleted Projects -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="fw-bold text-dark">Deleted Projects</span>
+                <span class="text-muted small" id="deletedMb">0 MB</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-success" id="deletedBar" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Completed Projects -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="fw-bold text-dark">Completed Projects</span>
+                <span class="text-muted small" id="completedMb">0 MB</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-success" id="completedBar" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Non-Completed Projects -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="fw-bold text-dark">Non-Completed Projects</span>
+                <span class="text-muted small" id="uncompletedMb">0 MB</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-success" id="uncompletedBar" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Total Summary -->
+        <div class="p-3 bg-light rounded d-flex justify-content-between align-items-center mt-5">
+            <div>
+                <h6 class="fw-bold text-dark mb-1">Total Utilized</h6>
+                <small class="text-muted" id="totalUsedDetail">0 MB of 0 MB used</small>
+            </div>
+            <div>
+                <h4 class="fw-bold text-success mb-0" id="totalPercent">0% Used</h4>
+            </div>
+        </div>
+
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/api_client.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await ApiClient.fetch('/api/v1/dashboard/stats/');
+            if (response.ok) {
+                const data = await response.json();
+                renderStorage(data);
+            } else {
+                console.error('Failed to load data.');
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+
+    function renderStorage(data) {
+        const totalMb = data.storage_limit_mb || 1024;
+        const usedMb = data.storage_used_mb || 0;
+        const breakdown = data.breakdown_mb || {};
+
+        // Helper to update bar
+        const updateBar = (idPrefix, mb) => {
+            const percent = (mb / totalMb) * 100;
+            const bar = document.getElementById(idPrefix + 'Bar');
+            const text = document.getElementById(idPrefix + 'Mb');
+            if (bar) bar.style.width = `${percent}%`;
+            if (text) text.innerText = `${mb} MB`;
+        };
+
+        // Update all categories
+        updateBar('active', breakdown.active || 0);
+        updateBar('draft', breakdown.draft || 0);
+        updateBar('deleted', breakdown.deleted || 0);
+        updateBar('completed', breakdown.completed || 0);
+        updateBar('uncompleted', breakdown.uncompleted || 0);
+
+        // Update Total Summary
+        const totalPercent = data.storage_percent || 0;
+        document.getElementById('totalPercent').innerText = `${totalPercent}% Used`;
+        document.getElementById('totalUsedDetail').innerText = `${usedMb} MB of ${totalMb} MB used`;
+    }
+</script>
+{% endblock %}

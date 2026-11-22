@@ -1,0 +1,259 @@
+﻿{% extends 'task_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Edit Profile{% endblock %}
+
+{% block header_title %}Profile{% endblock %}
+
+{% block nav_active_projects %}{% endblock %}
+{% block nav_active_profile %}active-link{% endblock %}
+
+{% block mobile_nav_active_projects %}{% endblock %}
+{% block mobile_nav_active_profile %}active-link text-primary fw-bold{% endblock %}
+
+{% block mobile_project_types %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .btn-custom {
+        background: #BE5103 !important;
+        color: #fff !important;
+        border: none !important;
+        padding: 10px 30px !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+    }
+
+    .btn-custom:hover {
+        background: #a14502 !important;
+        color: #fff !important;
+    }
+
+    .form-label {
+        font-weight: 600 !important;
+        color: #6c757d !important;
+        margin-bottom: 8px !important;
+    }
+
+    .form-control {
+        border-radius: 8px !important;
+        padding: 12px 15px !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    .form-control:focus {
+        border-color: #4EA72E !important;
+        box-shadow: 0 0 0 0.25rem rgba(78, 167, 46, 0.25) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <h2 class="section-title mb-4">Edit Profile</h2>
+    <div class="bg-white p-4 p-sm-5 rounded-3 shadow-sm" style="max-width: 800px;">
+        <form id="profileForm">
+            <div class="mb-4">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-control" id="first_name" placeholder="Enter first name" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="last_name" placeholder="Enter last name" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Organization</label>
+                <input type="text" class="form-control" id="organisation_name" placeholder="Enter organization name">
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Zip Code</label>
+                <input type="text" class="form-control" id="zip_code" placeholder="Enter zip code" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Timezone</label>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-control" id="timezone">
+                        <option value="UTC" selected>UTC</option>
+                        <option value="Asia/Kolkata">Asia/Kolkata</option>
+                        <option value="America/New_York">America/New_York (EST)</option>
+                        <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
+                        <option value="Europe/London">Europe/London (GMT)</option>
+                        <option value="Asia/Dubai">Asia/Dubai</option>
+                        <option value="Australia/Sydney">Australia/Sydney</option>
+                    </select>
+                    <button type="button" class="btn btn-outline-secondary" id="btnDetectTz" title="Detect from Device">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </button>
+                </div>
+                <small class="text-muted">Select your preferred timezone for project deadlines.</small>
+            </div>
+
+
+            <div class="mb-5">
+                <label class="form-label">Email</label>
+                <div class="input-group">
+                    <input type="email" class="form-control bg-light" id="email" readonly>
+                </div>
+                <small class="text-muted mt-2 d-block">Email change is disabled for security reasons.</small>
+            </div>
+            <div class="d-flex align-items-center">
+                <button type="submit" class="btn btn-custom px-5">Save Changes</button>
+                <a href="/dashboard/profile/"
+                    class="btn btn-link text-muted text-decoration-none ms-3 spa-link">Cancel</a>
+            </div>
+            <script>
+                (async function initProfileEditPage() {
+                    // Removed local token check to support cookie-based auth
+                    // const token = localStorage.getItem('access_token');
+                    // if (!token) { ... }
+
+                    // Fetch Data
+                    try {
+                        const response = await ApiClient.fetch('/api/v1/accounts/user/profile/');
+                        if (response.ok) {
+                            const data = await response.json();
+
+                            if (!data.is_premium) {
+                                if (window.navigateTo) {
+                                    window.navigateTo('/dashboard/profile/');
+                                } else {
+                                    window.location.href = '/dashboard/profile/';
+                                }
+                                // We can't easily show a toast on the next page without local storage or param, 
+                                // ensuring the previous page handles the block is more important.
+                                // But if they force navigate here:
+                                alert("You must have an active subscription to edit your profile."); // Fallback
+                                return;
+                            }
+
+                            // Elements might be null if navigating away quickly, so good to check but inputs should exist here
+                            const setVal = (id, val) => {
+                                const el = document.getElementById(id);
+                                if (el) el.value = val || '';
+                            };
+
+                            setVal('first_name', data.first_name);
+                            setVal('last_name', data.last_name);
+                            setVal('organisation_name', data.organisation_name);
+                            setVal('zip_code', data.zip_code);
+                            setVal('email', data.email);
+
+                            if (data.timezone) {
+                                const tzSelect = document.getElementById('timezone');
+                                if (tzSelect) {
+                                    // Check if option exists, if not add it dynamically to avoid validation errors on common ones
+                                    let exists = false;
+                                    for (let i = 0; i < tzSelect.options.length; i++) {
+                                        if (tzSelect.options[i].value === data.timezone) {
+                                            exists = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!exists) {
+                                        const opt = document.createElement('option');
+                                        opt.value = data.timezone;
+                                        opt.text = data.timezone;
+                                        tzSelect.add(opt);
+                                    }
+                                    tzSelect.value = data.timezone;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error(e);
+                    }
+
+                    // Auto-Detect Timezone Handler
+                    const detectBtn = document.getElementById('btnDetectTz');
+                    if (detectBtn) {
+                        detectBtn.addEventListener('click', () => {
+                            const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                            if (detected) {
+                                const tzSelect = document.getElementById('timezone');
+                                let exists = false;
+                                for (let i = 0; i < tzSelect.options.length; i++) {
+                                    if (tzSelect.options[i].value === detected) {
+                                        exists = true;
+                                        break;
+                                    }
+                                }
+                                if (!exists) {
+                                    const opt = document.createElement('option');
+                                    opt.value = detected;
+                                    opt.text = detected;
+                                    tzSelect.add(opt);
+                                }
+                                tzSelect.value = detected;
+
+                                // Visual feedback
+                                const btn = document.getElementById('btnDetectTz');
+                                const originalHtml = btn.innerHTML;
+                                btn.innerHTML = '<i class="fas fa-check"></i>';
+                                btn.classList.remove('btn-outline-secondary');
+                                btn.classList.add('btn-success');
+                                setTimeout(() => {
+                                    btn.innerHTML = originalHtml;
+                                    btn.classList.remove('btn-success');
+                                    btn.classList.add('btn-outline-secondary');
+                                }, 1500);
+                            }
+                        });
+                    }
+
+
+                    // Handle Submit
+                    const profileForm = document.getElementById('profileForm');
+                    if (profileForm) {
+                        profileForm.addEventListener('submit', async (e) => {
+                            e.preventDefault();
+                            const submitBtn = document.querySelector('button[type="submit"]');
+                            const originalBtnText = submitBtn.textContent;
+                            submitBtn.disabled = true;
+                            submitBtn.textContent = 'Processing...';
+
+                            const payload = {
+                                first_name: document.getElementById('first_name').value,
+                                last_name: document.getElementById('last_name').value,
+                                organisation_name: document.getElementById('organisation_name').value,
+                                zip_code: document.getElementById('zip_code').value,
+                                timezone: document.getElementById('timezone').value
+                            };
+
+                            try {
+                                const profileResponse = await ApiClient.fetch('/api/v1/accounts/profile/update/initiate/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(payload)
+                                });
+
+                                if (!profileResponse.ok) {
+                                    const err = await profileResponse.json();
+                                    showNotification('Update Failed: ' + (err.detail || JSON.stringify(err)), 'error');
+                                    submitBtn.disabled = false;
+                                    submitBtn.textContent = originalBtnText;
+                                    return;
+                                }
+
+                                setTimeout(() => {
+                                    if (window.navigateTo) {
+                                        window.navigateTo('/dashboard/profile/verify-update/');
+                                    } else {
+                                        window.location.href = '/dashboard/profile/verify-update/';
+                                    }
+                                }, 1500);
+
+                            } catch (error) {
+                                console.error(error);
+                                showNotification('An error occurred.', 'error');
+                                submitBtn.disabled = false;
+                                submitBtn.textContent = originalBtnText;
+                            }
+                        });
+                    }
+                })();
+            </script>
+</main>
+{% endblock %}

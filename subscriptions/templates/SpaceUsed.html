@@ -1,0 +1,144 @@
+﻿{% extends 'task_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Space Used{% endblock %}
+
+
+{% block header_title %}Space Used{% endblock %}
+
+
+
+{% block sidebar %}
+<a href="/projects/tasks/new/" class="sidebar-item">
+    <i class="fas fa-plus-circle me-2"></i> New Project
+</a>
+<a href="/projects/tasks/calendar/" class="sidebar-item"><i class="fas fa-calendar-alt me-2"></i>
+    Calendar</a>
+<a href="/dashboard/usage/" class="sidebar-item active-sidebar">
+    <i class="fas fa-battery-three-quarters me-2"></i> Space Used
+</a>
+{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div class="left-item">
+            <h2 class="section-title mb-0">Space Used</h2>
+        </div>
+
+        <div class="right-item mb-0">
+            <a href="/projects/tasks/active/" class="btn btn-custom w-100 w-md-auto text-center">Back to Projects</a>
+        </div>
+    </div>
+    <div class="usage-card shadow-sm p-3 p-md-4">
+        <div class="mb-4">
+            <div class="folder-label"><span>Active Projects</span><span>... MB</span></div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%;"></div>
+            </div>
+        </div>
+        <div class="mb-4">
+            <div class="folder-label"><span>Draft Projects</span><span>... MB</span></div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%;"></div>
+            </div>
+        </div>
+        <div class="mb-4">
+            <div class="folder-label"><span>Deleted Projects</span><span>... MB</span></div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%;"></div>
+            </div>
+        </div>
+        <div class="mb-4">
+            <div class="folder-label"><span>Completed Projects</span><span>... MB</span></div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%;"></div>
+            </div>
+        </div>
+        <!-- Non-Completed logic typically hidden or 0 -->
+        <div class="mb-4" style="display:none;">
+            <div class="folder-label"><span>Non-Completed Projects</span><span>0 MB</span></div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%;"></div>
+            </div>
+        </div>
+        <div class="total-usage-box">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="fw-bold d-block">Total Utilized</span>
+                    <small class="text-muted">... MB of ... MB used</small>
+                </div>
+                <div class="text-end"><span class="fs-4 fw-bold text-success">0% Used</span></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSpaceUsedPage);
+        } else {
+            initSpaceUsedPage();
+        }
+
+        async function initSpaceUsedPage() {
+            console.log('Initializing Space Used Page...');
+
+
+            try {
+                // Fetch Usage
+                const usageRes = await ApiClient.fetch('/api/v1/storage/usage/');
+                const usageData = await usageRes.json();
+
+                // Fetch Limit
+                const limitRes = await ApiClient.fetch('/api/v1/storage/limit/');
+                const limitData = await limitRes.json();
+
+                const limitMb = limitData.limit_mb;
+                const totalUsedMb = usageData.used_mb;
+
+                // Update Breakdown
+                updateSection('Active Projects', usageData.breakdown_mb.ACTIVE || 0, limitMb);
+                updateSection('Draft Projects', usageData.breakdown_mb.DRAFT || 0, limitMb);
+                updateSection('Deleted Projects', usageData.breakdown_mb.DELETED || 0, limitMb);
+                updateSection('Completed Projects', usageData.breakdown_mb.COMPLETED || 0, limitMb);
+
+                // Update Total
+                const totalPercent = (totalUsedMb / limitMb) * 100;
+                const totalBox = document.querySelector('.total-usage-box small');
+                if (totalBox) totalBox.textContent = `${totalUsedMb} MB of ${limitMb} MB used`;
+
+                const percentSpan = document.querySelector('.total-usage-box .text-end span');
+                if (percentSpan) {
+                    percentSpan.textContent = `${totalPercent.toFixed(1)}% Used`;
+
+                    if (totalPercent > 90) percentSpan.className = 'fs-4 fw-bold text-danger';
+                    else if (totalPercent > 70) percentSpan.className = 'fs-4 fw-bold text-warning';
+                    else percentSpan.className = 'fs-4 fw-bold text-success';
+                }
+
+            } catch (e) {
+                console.error('Failed to load storage data', e);
+            }
+        }
+
+        function updateSection(labelName, usedMb, totalLimitMb) {
+            // Find the section by label text
+            const labels = document.querySelectorAll('.folder-label');
+            let foundLabel = null;
+            labels.forEach(l => {
+                if (l.children[0].textContent.trim() === labelName) foundLabel = l;
+            });
+
+            if (foundLabel) {
+                foundLabel.children[1].textContent = `${usedMb} MB`;
+                const progressDiv = foundLabel.nextElementSibling.querySelector('.progress-bar');
+                if (progressDiv) {
+                    const percent = (usedMb / totalLimitMb) * 100;
+                    progressDiv.style.width = `${percent}%`;
+                }
+            }
+        }
+    </script>
+</main>
+{% endblock %}
+
+{% block extra_js %}{% endblock %}

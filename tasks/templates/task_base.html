@@ -1,0 +1,248 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jetmyprojects | Smart Project & Deadline Tracker</title>
+    <meta name="description"
+        content="Manage projects, track deadlines, and stay productive with jetmyprojects. Simple, fast, cloud-based project management.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/static/ImageFaviconx.png">
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{% static 'css/global_styles.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}?v=7">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="{% static 'js/api_client.js' %}?v=1"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3 toast-container-ontop"></div>
+
+    <header class="navbar navbar-expand-lg top-branding">
+        <div class="container-fluid p-0">
+            <a href="/" class="d-flex align-items-center text-decoration-none ">
+                <img src="/static/ImageLogox.png" alt="Logo" class="logo-custom" style="margin-right:8px;">
+                <span class="brand-green-text">JetMyProjects<sup>&reg;</sup></span>
+            </a>
+            <div class="ms-auto brand-orange-title">{% block header_title %}Projects{% endblock %}</div>
+        </div>
+    </header>
+
+    <nav class="navbar navbar-expand-lg nav-header-row">
+        <div class="container-fluid p-0">
+            <span class="fs-5 text-white" id="userGreeting">Hello, {{ display_name|default:"User" }}!</span>
+            <button class="navbar-toggler border-white" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#userNavOffcanvas" aria-controls="userNavOffcanvas">
+                <i class="fas fa-bars text-white"></i>
+            </button>
+
+            <!-- Desktop Nav -->
+            <div class="collapse navbar-collapse" id="userNav">
+                <div class="navbar-nav ms-auto gap-lg-3">
+                    <a class="nav-link" href="/dashboard/">Dashboard</a>
+                    <a class="nav-link {% block nav_active_projects %}active-link{% endblock %}"
+                        href="{% url 'task-list-active' %}">Projects</a>
+                    <a class="nav-link {% block nav_active_profile %}{% endblock %}"
+                        href="/dashboard/profile/">Profile</a>
+                    <a class="nav-link {% block nav_active_billing %}{% endblock %}"
+                        href="{% url 'payment_history' %}">Billing History</a>
+                    <a class="nav-link" href="/dashboard/sign-out/">Sign Out</a>
+                </div>
+            </div>
+
+            <!-- Mobile Offcanvas -->
+            <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="userNavOffcanvas"
+                aria-labelledby="userNavOffcanvasLabel">
+                <div class="offcanvas-header bg-light border-bottom">
+                    <h5 class="offcanvas-title fw-bold text-dark" id="userNavOffcanvasLabel">Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body d-flex flex-column">
+                    <div class="navbar-nav w-100 gap-lg-3 mb-auto">
+                        <a class="nav-link text-dark border-bottom py-3" href="/dashboard/">Dashboard</a>
+                        <a class="nav-link text-dark border-bottom py-3 {% block mobile_nav_active_projects %}active-link text-primary fw-bold{% endblock %}"
+                            href="/projects/tasks/active/">Projects</a>
+                        <a class="nav-link text-dark border-bottom py-3 {% block mobile_nav_active_profile %}{% endblock %}"
+                            href="/dashboard/profile/">Profile</a>
+                        <a class="nav-link text-dark border-bottom py-3 {% block mobile_nav_active_billing %}{% endblock %}"
+                            href="{% url 'payment_history' %}">Billing
+                            History</a>
+                        <a class="nav-link text-dark py-3" href="/dashboard/sign-out/">Sign Out</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="d-lg-none px-3 pt-3">
+        <div class="row g-2">
+            <!-- Left: Sidebar / Menu -->
+            <div class="col-6">
+                <button class="mobile-nav-btn btn-white mb-0 h-100" data-bs-toggle="collapse"
+                    data-bs-target="#mobileSidebarNav">
+                    <span class="text-truncate"> Menu</span>
+                    <i class="fas fa-chevron-down ms-1"></i>
+                </button>
+            </div>
+            <!-- Right: Project Types -->
+            <div class="col-6">
+                <button class="mobile-nav-btn btn-white mb-0 h-100" data-bs-toggle="collapse"
+                    data-bs-target="#mobileProjectTypes">
+                    <span class="text-truncate">
+                        Projects</span>
+                    <i class="fas fa-chevron-down ms-1"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Sidebar Dropdown (Left) -->
+        <div class="collapse d-lg-none bg-white border-bottom p-3 mt-2 rounded shadow-sm" id="mobileSidebarNav">
+            <div class="d-flex flex-column gap-2">
+
+                <!-- Removed Dashboard, Profile, Billing as per request -->
+                <a href="{% url 'task-create' %}" class="mobile-nav-link text-decoration-none text-dark">
+                    <i class="fas fa-plus-circle me-2 text-brand-orange"></i> New Project
+                </a>
+                <a href="{% url 'task-calendar' %}" class="mobile-nav-link text-decoration-none text-dark">
+                    <i class="far fa-calendar-alt me-2 text-primary"></i> Calendar
+                </a>
+                <a href="{% url 'space_used' %}" class="mobile-nav-link text-decoration-none text-dark">
+                    <i class="fas fa-hdd me-2 text-success"></i> Space Used
+                </a>
+
+
+            </div>
+        </div>
+
+        <!-- Mobile Project Dropdown (Right) -->
+        <div class="collapse d-lg-none bg-white border-bottom p-3 mt-2 rounded shadow-sm" id="mobileProjectTypes">
+            <div class="d-flex flex-column gap-2">
+                <a href="{% url 'task-list-active' %}" class="mobile-nav-link text-dark text-decoration-none fw-bold">
+                    <i class="fas fa-play-circle me-2 text-primary"></i> Active Projects
+                </a>
+                <a href="{% url 'task-list-draft' %}" class="mobile-nav-link text-dark text-decoration-none">
+                    <i class="fas fa-file-alt me-2 text-secondary"></i> Draft Projects
+                </a>
+                <a href="{% url 'task-list-completed' %}" class="mobile-nav-link text-dark text-decoration-none">
+                    <i class="fas fa-check-double me-2 text-success"></i> Completed Projects
+                </a>
+                <a href="{% url 'task-list-uncompleted' %}" class="mobile-nav-link text-dark text-decoration-none">
+                    <i class="fas fa-times-circle me-2 text-danger"></i> Not Completed Projects
+                </a>
+                <a href="{% url 'task-list-deleted' %}" class="mobile-nav-link text-dark text-decoration-none">
+                    <i class="fas fa-trash-alt me-2 text-muted"></i> Deleted Projects
+                </a>
+            </div>
+        </div>
+
+
+
+    </div>
+    </div>
+    </div>
+    </div> <!-- End Mobile Specific Wrappers -->
+
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar d-none d-lg-block">
+            <nav class="nav flex-column gap-2">
+                <a href="{% url 'task-create' %}" class="sidebar-item">
+                    <i class="fas fa-plus-circle"></i> New Project
+                </a>
+                <a href="{% url 'task-calendar' %}" class="sidebar-item">
+                    <i class="far fa-calendar-alt"></i> Calendar
+                </a>
+                <a href="{% url 'space_used' %}" class="sidebar-item">
+                    <i class="fas fa-hdd"></i> Space Used
+                </a>
+
+            </nav>
+        </aside>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global Toast Notification
+        function showNotification(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            const icon = type === 'success' ? 'fa-check-circle text-success' : 'fa-exclamation-circle text-danger';
+
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center border-0 shadow-lg mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body d-flex align-items-center">
+                            <i class="fas ${icon} fs-5 me-2"></i>
+                            <span class="fw-medium">${message}</span>
+                        </div>
+                        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = document.getElementById(toastId);
+            const bsToast = new bootstrap.Toast(toastElement, { delay: 4000 });
+            bsToast.show();
+
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Auto-Sync Timezone Logic ---
+            const userTimezone = "{{ user_timezone|default:'UTC' }}";
+            const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            if (detectedTz && (userTimezone === 'UTC' || !userTimezone)) {
+                try {
+                    if (typeof ApiClient !== 'undefined') {
+                        await ApiClient.fetch('/api/v1/accounts/user/set-timezone/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ timezone: detectedTz })
+                        });
+                    }
+                } catch (e) {
+                    console.error('Timezone auto-sync failed', e);
+                }
+            }
+        });
+
+        async function handleLogout(event) {
+            event.preventDefault();
+            try {
+                if (typeof ApiClient !== 'undefined') {
+                    await ApiClient.fetch('/api/v1/accounts/auth/logout/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({}) // Cookie handles auth
+                    });
+                }
+            } catch (e) { console.error(e); }
+
+            // localStorage.removeItem('access_token');
+            // localStorage.removeItem('refresh_token');
+            window.location.href = '/';
+        }
+    </script>
+    <script src="{% static 'js/navigation.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

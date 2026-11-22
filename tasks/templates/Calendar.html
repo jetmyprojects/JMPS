@@ -1,0 +1,259 @@
+﻿{% extends 'task_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Calendar{% endblock %}
+
+{% block sidebar %}
+<a href="/projects/tasks/new/" class="sidebar-item"><i class="fas fa-plus-circle me-2"></i> New Project</a>
+<a href="/projects/tasks/calendar/" class="sidebar-item active-sidebar"><i class="fas fa-calendar-alt me-2"></i>
+    Calendar</a>
+<a href="/dashboard/usage/" class="sidebar-item"><i class="fas fa-battery-three-quarters me-2"></i> Space Used</a>
+{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <div class="calendar-wrapper">
+        <div class="row g-4">
+            <!-- Right Column: Calendar -->
+            <div class="col-lg-8">
+                <!-- Header -->
+                <div class="calendar-header">
+                    <div class="month-title" id="monthTitle">January</div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <button class="btn btn-sm btn-light" id="prevMonthBtn"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <button class="btn btn-sm btn-today px-3" id="todayBtn">Today</button>
+                        <button class="btn btn-sm btn-light" id="nextMonthBtn"><i
+                                class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Calendar Grid -->
+                <!-- Day Headers -->
+                <div class="calendar-grid mb-1">
+                    <div class="calendar-day-header">SUN</div>
+                    <div class="calendar-day-header">MON</div>
+                    <div class="calendar-day-header">TUE</div>
+                    <div class="calendar-day-header">WED</div>
+                    <div class="calendar-day-header">THU</div>
+                    <div class="calendar-day-header">FRI</div>
+                    <div class="calendar-day-header">SAT</div>
+                </div>
+                <!-- Days -->
+                <div class="calendar-grid" id="daysGrid">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
+            <!-- Left Column: Monthly Projects -->
+            <div class="col-lg-4">
+                <div class="timeline-section mt-0">
+                    <div class="timeline-title">Projects</div>
+                    <div id="timelineContainer" class="timeline-container-scroll">
+                        <!-- Tasks Injected by JS -->
+                        <div class="text-center text-muted py-4">No projects for this month.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // init function wrapper to allow manual call
+            initCalendarPage();
+        });
+
+        // Listen for custom SPA navigation event
+        document.addEventListener('app:pageLoaded', (e) => {
+            if (e.detail.path.includes('/projects/tasks/calendar/')) {
+                initCalendarPage();
+            }
+        });
+
+        async function initCalendarPage() {
+            console.log('Initializing Calendar Page...');
+
+            // Token check removed as per instruction.
+
+            try {
+                const profileRes = await ApiClient.fetch('/api/v1/accounts/user/profile/');
+                if (profileRes.ok) {
+                    const profileData = await profileRes.json();
+                    const greetingName = profileData.first_name || profileData.username || 'User';
+                    const greetingEl = document.getElementById('userGreeting'); // Note: ID in base is userGreeting
+                    if (greetingEl) {
+                        greetingEl.textContent = `Hello, ${greetingName}!`;
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load profile', e);
+            }
+
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+
+            let currentDate = new Date(); // Tracks the displayed month
+            const todayDate = new Date(); // Fixed 'Today'
+            let allTasks = [];
+
+            // Fetch Active Tasks
+            async function fetchTasks() {
+                try {
+                    const response = await ApiClient.fetch('/api/v1/tasks/active/');
+                    if (response.ok) {
+                        const data = await response.json();
+                        allTasks = data.results || data; // Handle pagination
+                        renderCalendar();
+                        renderMonthProjects();
+                    }
+                } catch (e) { console.error(e); }
+            }
+
+            // Render Calendar Grid
+            function renderCalendar() {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+
+                const monthTitle = document.getElementById('monthTitle');
+                if (monthTitle) monthTitle.textContent = monthNames[month];
+
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                const startDayIndex = firstDay.getDay(); // 0-6
+
+                const grid = document.getElementById('daysGrid');
+                if (!grid) return;
+                grid.innerHTML = '';
+
+                // Previous Month Padding
+                for (let i = 0; i < startDayIndex; i++) {
+                    const placeholder = document.createElement('div');
+                    grid.appendChild(placeholder);
+                }
+
+                // Days
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateObj = new Date(year, month, day);
+                    const el = document.createElement('div');
+                    el.className = 'calendar-day';
+                    el.textContent = day.toString().padStart(2, '0');
+
+                    // Check if day is Today
+                    const isToday = dateObj.getDate() === todayDate.getDate() &&
+                        dateObj.getMonth() === todayDate.getMonth() &&
+                        dateObj.getFullYear() === todayDate.getFullYear();
+
+                    if (isToday) {
+                        el.classList.add('calendar-day-today');
+                    }
+
+                    // Check if has tasks (Red circle in design)
+                    // Construct local YYYY-MM-DD string to match API data
+                    const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const hasTask = allTasks.some(t => t.deadline_date === dayStr);
+
+                    if (hasTask) {
+                        el.classList.add('has-task');
+                    }
+
+                    grid.appendChild(el);
+                }
+            }
+
+            // Render Projects for Month
+            function renderMonthProjects() {
+                const container = document.getElementById('timelineContainer');
+                if (!container) return;
+                container.innerHTML = '';
+
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+
+                // Filter tasks for this month
+                const monthTasks = allTasks.filter(t => {
+                    if (!t.deadline_date) return false;
+                    // Using split to avoid timezone offset issues
+                    const [y, m, d_val] = t.deadline_date.split('-');
+                    // JS Month is 0-indexed.
+                    return parseInt(y) === year && (parseInt(m) - 1) === month;
+                });
+
+                // Sort by date
+                monthTasks.sort((a, b) => new Date(a.deadline_date) - new Date(b.deadline_date));
+
+                if (monthTasks.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted py-4">No projects for this month.</div>';
+                    return;
+                }
+
+                const colors = ['bg-yellow', 'bg-green', 'bg-blue', 'bg-red'];
+
+                monthTasks.forEach((task, index) => {
+                    const colorClass = colors[index % colors.length];
+                    // Using UTC parts or split logic to ensure display matches input string
+                    const [y, m, d] = task.deadline_date.split('-');
+                    const localDate = new Date(y, m - 1, d);
+
+                    // Format: Jan 01
+                    const dateDisplay = localDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+                    const timeDisplay = task.deadline_time ? formatTime(task.deadline_time) : 'All Day';
+
+                    const html = `
+                <div class="timeline-item">
+                    <div class="timeline-time">${dateDisplay}</div>
+                    <div class="timeline-line"></div>
+                    <div class="timeline-dot"></div>
+                    <div class="task-card ${colorClass} cursor-pointer" onclick="window.location.href='/projects/tasks/${task.id}/'">
+                        <h5>${task.project_name}</h5>
+                        <p>${timeDisplay}</p>
+                    </div>
+                </div>
+            `;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+            }
+
+            function formatTime(timeStr) {
+                // HH:MM:SS -> HH:MM AM/PM
+                if (!timeStr) return '';
+                const [h, m] = timeStr.split(':');
+                const date = new Date();
+                date.setHours(h, m);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            // Navigation
+            const prevBtn = document.getElementById('prevMonthBtn');
+            if (prevBtn) prevBtn.onclick = () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+                renderMonthProjects();
+            };
+            const nextBtn = document.getElementById('nextMonthBtn');
+            if (nextBtn) nextBtn.onclick = () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+                renderMonthProjects();
+            };
+
+            // Today Button Logic
+            const todayBtn = document.getElementById('todayBtn');
+            if (todayBtn) todayBtn.onclick = () => {
+                currentDate = new Date(); // Reset to today
+                renderCalendar();
+                renderMonthProjects();
+            };
+
+            // Initial Render (Empty)
+            renderCalendar();
+            renderMonthProjects();
+
+            await fetchTasks();
+        }
+    </script>
+</main>
+{% endblock %}
+
+{% block extra_js %}{% endblock %}

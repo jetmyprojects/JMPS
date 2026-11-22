@@ -1,0 +1,362 @@
+﻿{% extends 'task_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Edit Project{% endblock %}
+
+
+{% block content %}
+<main class="content-area">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="left-item">
+            <h2 class="section-title">Edit Project</h2>
+        </div>
+
+        <div class="right-item">
+            <a href="/projects/tasks/active/" class="btn btn-custom">Back to Projects</a>
+        </div>
+    </div>
+    <form id="projectForm">
+        <div class="mb-3">
+            <label class="form-label">Project Name</label>
+            <input type="text" class="form-control" id="projectName" placeholder="Enter Project name" required>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Deadline Date</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="deadlineDate" required>
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Deadline Time</label>
+                <input type="time" class="form-control" id="deadlineTime" required>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Project Notes</label>
+            <textarea class="form-control" id="projectNotes" rows="4" style="overflow-y: hidden; resize: none;"
+                placeholder="Add additional details here..." maxlength="5000"></textarea>
+            <div class="text-end text-muted small mt-1"><span id="charCount">0</span>/5000</div>
+        </div>
+        <div class="mb-4">
+            <label class="form-label">Attached Files</label>
+            <div id="existingFiles" class="mb-3 text-muted fst-italic">Loading files...</div>
+
+            <label class="form-label">Add New Files (Max 5 total)</label>
+            <input type="file" class="form-control" id="fileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.docx,.pptx">
+            <div id="fileList" class="file-list mt-2"></div>
+            <small class="text-muted">Allowed formats: PDF, PNG, JPG, DOCX, PPTX</small>
+        </div>
+        <div class="d-flex flex-wrap gap-3">
+            <button type="submit" class="btn btn-custom">Update Project</button>
+            <a href="/projects/tasks/active/" class="btn btn-custom">Cancel</a>
+        </div>
+    </form>
+    <script>
+        function initEditTaskPage() {
+            // Auto-resize textarea
+            const projectNotes = document.getElementById('projectNotes');
+            const resizeTextarea = () => {
+                if (projectNotes) {
+                    projectNotes.style.height = 'auto';
+                    projectNotes.style.height = projectNotes.scrollHeight + 'px';
+                }
+            };
+            const charCount = document.getElementById('charCount');
+            const updateCharCount = () => {
+                if (projectNotes && charCount) charCount.innerText = projectNotes.value.length;
+            };
+
+            if (projectNotes) {
+                projectNotes.addEventListener('input', () => {
+                    resizeTextarea();
+                    updateCharCount();
+                });
+            }
+
+            // Initialize Flatpickr
+            const fp = flatpickr("#deadlineDate", {
+                dateFormat: "Y-m-d", // Value format sent to server
+                altInput: true,      // Enable alternative input for display
+                altFormat: "m/d/Y",  // Display format (MM/DD/YYYY)
+                minDate: "today",
+                allowInput: true
+            });
+
+            // Open calendar when icon is clicked
+            const dateInput = document.querySelector('#deadlineDate');
+            if (dateInput) {
+                const icon = dateInput.closest('.input-group')?.querySelector('.input-group-text');
+                if (icon) {
+                    icon.style.cursor = 'pointer';
+                    icon.addEventListener('click', () => fp.open());
+                }
+            }
+
+            async function loadProfile() {
+                try {
+                    const profileResponse = await ApiClient.fetch('/api/v1/accounts/user/profile/');
+                    if (profileResponse.ok) {
+                        const profileData = await profileResponse.json();
+                        const name = profileData.first_name || profileData.username || 'User';
+                        const greetingEl = document.getElementById('userGreeting');
+                        if (greetingEl) greetingEl.innerHTML = `Hello, ${name}!`;
+                    }
+                } catch (e) { console.error(e); }
+            }
+            loadProfile();
+
+            // Extract ID from URL: /dashboard/tasks/{id}/edit/
+            // Actually usually /projects/tasks/{id}/edit/
+            // Pathname logic in existing code relies on 'tasks' index.
+            const parts = window.location.pathname.split('/');
+            // parts e.g. ['', 'projects', 'tasks', '123', 'edit', '']
+            const taskId = parts[parts.indexOf('tasks') + 1];
+
+            let existingFiles = [];
+            let newFiles = [];
+            let currentStatus = 'ACTIVE';
+
+            if (taskId) {
+                // Set min date to today
+                const today = new Date().toISOString().split('T')[0];
+                const deadlineInput = document.getElementById('deadlineDate');
+                if (deadlineInput) deadlineInput.setAttribute('min', today);
+
+                async function loadTaskData() {
+                    try {
+                        const response = await ApiClient.fetch(`/api/v1/tasks/${taskId}/`);
+                        if (response.ok) {
+                            const task = await response.json();
+                            currentStatus = task.status;
+
+                            if (document.getElementById('projectName')) document.getElementById('projectName').value = task.project_name;
+
+                            // Use Flatpickr instance to set date to ensure UI syncs
+                            if (task.deadline_date) {
+                                fp.setDate(task.deadline_date, true);
+                            }
+
+                            if (document.getElementById('deadlineTime')) document.getElementById('deadlineTime').value = task.deadline_time;
+                            if (document.getElementById('projectNotes')) document.getElementById('projectNotes').value = task.project_notes;
+                            resizeTextarea();
+                            updateCharCount();
+
+                            // Dynamic Cancel Button Link
+                            const cancelLink = document.querySelector('a.btn-custom[href="/projects/tasks/active/"]');
+                            // Also handle Back to Projects at top right
+                            const backLink = document.querySelector('.right-item .btn-custom');
+
+                            const setBackLink = (link) => {
+                                if (!link) return;
+                                if (currentStatus === 'DRAFT') link.href = '/projects/tasks/draft/';
+                                else if (currentStatus === 'COMPLETED') link.href = '/projects/tasks/completed/';
+                                else if (currentStatus === 'UNCOMPLETED') link.href = '/projects/tasks/uncompleted/';
+                                else if (currentStatus === 'DELETED') link.href = '/projects/tasks/deleted/';
+                                else link.href = '/projects/tasks/active/';
+                            }
+                            setBackLink(cancelLink);
+                            setBackLink(backLink);
+
+                            existingFiles = task.files || [];
+                            const existingFilesDiv = document.getElementById('existingFiles');
+                            if (existingFiles.length > 0) {
+                                existingFilesDiv.innerHTML = '';
+                                existingFiles.forEach(f => {
+                                    const div = document.createElement('div');
+                                    div.className = 'd-flex align-items-center justify-content-between p-2 mb-2 bg-light rounded';
+                                    div.id = `file-row-${f.id}`;
+                                    div.innerHTML = `
+                                    <a href="${f.file}" target="_blank" class="text-decoration-none">
+                                        <i class="fas fa-file me-2"></i>${f.file.split('/').pop()}
+                                    </a>
+                                    <button type="button" class="btn btn-sm text-danger" onclick="deleteExistingFile(${f.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                `;
+                                    existingFilesDiv.appendChild(div);
+                                });
+                            } else {
+                                existingFilesDiv.textContent = 'No files attached.';
+                            }
+                        }
+                    } catch (e) { console.error(e); }
+                }
+                loadTaskData();
+            }
+
+            window.deleteExistingFile = async function (fileId) {
+                try {
+                    const response = await ApiClient.fetch(`/api/v1/task-files/${fileId}/`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        const row = document.getElementById(`file-row-${fileId}`);
+                        if (row) row.remove();
+                        existingFiles = existingFiles.filter(f => f.id !== fileId);
+                        showNotification('File deleted.', 'success');
+                    } else {
+                        showNotification('Failed to delete file.', 'error');
+                    }
+                } catch (e) { console.error(e); }
+            }
+
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+
+
+            if (fileInput) {
+                fileInput.addEventListener('change', function (e) {
+                    const incoming = Array.from(e.target.files);
+
+                    // Validate file types
+                    const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg', 'docx', 'pptx'];
+                    const invalidFiles = incoming.filter(file => {
+                        const parts = file.name.split('.');
+                        const ext = parts[parts.length - 1].toLowerCase();
+                        return !allowedExtensions.includes(ext);
+                    });
+
+                    if (invalidFiles.length > 0) {
+                        showNotification('Invalid file format. Allowed: PDF, PNG, JPG, DOCX, PPTX.', 'error');
+                        e.target.value = ''; // Clear selection
+                        return;
+                    }
+
+                    // Check against existing server files
+                    const duplicatesExisting = incoming.filter(file => {
+                        return existingFiles.some(existing => {
+                            // Extract filename from URL (e.g. /media/tasks/A.pdf -> A.pdf)
+                            // Note: decoding might be needed if URL encoded, but usually file.name is plain.
+                            // We'll compare loose matches or exact if possible.
+                            const existingName = existing.file.split('/').pop().split('?')[0]; // Remove query params if any
+                            return existingName === file.name;
+                        });
+                    });
+
+                    if (duplicatesExisting.length > 0) {
+                        showNotification(`File "${duplicatesExisting[0].name}" already exists in this project.`, 'warning');
+                        e.target.value = '';
+                        return;
+                    }
+
+                    // Check against already selected new files
+                    const uniqueIncoming = incoming.filter(file => {
+                        const isDuplicate = newFiles.some(nf => nf.name === file.name);
+                        if (isDuplicate) {
+                            showNotification(`File "${file.name}" is already selected.`, 'warning');
+                        }
+                        return !isDuplicate;
+                    });
+
+                    if (uniqueIncoming.length === 0 && incoming.length > 0) {
+                        e.target.value = '';
+                        return;
+                    }
+
+                    if (existingFiles.length + newFiles.length + uniqueIncoming.length > 5) {
+                        showNotification('You can only upload a maximum of 5 files.', 'warning');
+                        e.target.value = '';
+                        return;
+                    }
+                    newFiles = newFiles.concat(uniqueIncoming);
+                    fileInput.value = '';
+                    displayFiles();
+                });
+            }
+
+            function displayFiles() {
+                if (!fileList) return;
+                fileList.innerHTML = '';
+                newFiles.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'd-flex align-items-center justify-content-between p-2 mb-2 bg-light rounded';
+                    fileItem.innerHTML = `
+                    <span class="small"><i class="fas fa-file me-2"></i>${file.name}</span>
+                    <button type="button" class="btn btn-sm text-danger border-0 p-0" onclick="deleteNewFile(${index})"><i class="fas fa-times"></i></button>
+                `;
+                    fileList.appendChild(fileItem);
+                });
+            }
+
+            window.deleteNewFile = function (index) {
+                newFiles.splice(index, 1);
+                displayFiles();
+            }
+
+            const projectForm = document.getElementById('projectForm');
+            if (projectForm) {
+                projectForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const submitButton = e.target.querySelector('button[type="submit"]');
+                    const originalBtnText = submitButton.innerHTML;
+
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Updating...';
+
+                    const formData = new FormData();
+                    formData.append('project_name', document.getElementById('projectName').value);
+                    formData.append('deadline_date', document.getElementById('deadlineDate').value);
+                    formData.append('deadline_time', document.getElementById('deadlineTime').value);
+                    formData.append('project_notes', document.getElementById('projectNotes').value);
+
+                    newFiles.forEach(file => {
+                        formData.append('uploaded_files', file);
+                    });
+
+                    try {
+                        const response = await ApiClient.fetch(`/api/v1/tasks/${taskId}/`, {
+                            method: 'PUT',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            showNotification('Project Updated Successfully!', 'success');
+                            setTimeout(() => {
+                                // Use existing button href or logic
+                                const cancelLink = document.querySelector('a.btn-custom[href^="/projects/tasks/"]'); // Find a link that navigates back
+                                if (cancelLink && cancelLink.href) window.location.href = cancelLink.href;
+                                else window.location.href = '/projects/tasks/active/';
+                            }, 1500);
+                        } else if (response.status === 403) {
+                            showNotification('Upgrade your plan to update projects.', 'error');
+                            submitButton.disabled = false;
+                            submitButton.innerHTML = originalBtnText;
+                        } else {
+                            const err = await response.json();
+                            let errorMsg = 'Error updating project';
+                            if (err) {
+                                if (err.detail) {
+                                    errorMsg = err.detail;
+                                } else {
+                                    const messages = [];
+                                    for (const [key, value] of Object.entries(err)) {
+                                        const valStr = Array.isArray(value) ? value.join(' ') : value;
+                                        const keyStr = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+                                        messages.push(`${keyStr}: ${valStr}`);
+                                    }
+                                    if (messages.length > 0) errorMsg = messages.join('<br>');
+                                    else errorMsg = JSON.stringify(err);
+                                }
+                            }
+                            showNotification(errorMsg, 'error');
+                            submitButton.disabled = false;
+                            submitButton.innerHTML = originalBtnText;
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        showNotification('Error updating project: ' + e.toString(), 'error');
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalBtnText;
+                    }
+                });
+            }
+        }
+
+        // Run immediately
+        initEditTaskPage();
+    </script>
+</main>
+{% endblock %}

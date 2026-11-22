@@ -1,0 +1,24 @@
+{% extends 'payment_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Payment Updated{% endblock %}
+
+{% block header_title %}Payment Settings{% endblock %}
+
+{% block content %}
+<main class="content-area text-center">
+    <div class="mb-4">
+        <div class="rounded-circle bg-success d-inline-flex align-items-center justify-content-center"
+            style="width: 80px; height: 80px;">
+            <i class="fas fa-check text-white fa-3x"></i>
+        </div>
+    </div>
+
+    <h2 class="section-title">Payment Method Updated</h2>
+    <div class="info-container">
+        <p class="text-muted mb-4">Your payment details have been successfully updated. Future billing will be charged
+            to the new card.</p>
+        <a href="/#pricing" class="btn btn-brand-orange">Return to Pricing Plan</a>
+    </div>
+</main>
+{% endblock %}

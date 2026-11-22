@@ -1,0 +1,23 @@
+/* Payment Specific Overrides */
+
+/* Limit button width on payment pages for better aesthetics */
+.btn-brand-orange {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Ensure consistent spacing and centering in payment info containers */
+.info-container {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Ensure section titles align with payment layout */
+.section-title {
+    color: var(--brand-orange);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}

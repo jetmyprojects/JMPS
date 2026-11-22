@@ -1,0 +1,28 @@
+{% extends 'payment_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Subscription Successful{% endblock %}
+
+{% block header_title %}Pricing Plan{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <h2 class="section-title">Subscription Successful!</h2>
+    <div class="info-container">
+        <p class="mb-3">You have successfully subscribed to the current pricing plan.</p>
+        <p class="mb-4">Your plan is active until: <span id="expiryDate" class="fw-bold text-dark"></span></p>
+        <a href="{% url 'new_task' %}" class="btn btn-brand-orange">Create Your First Project</a>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        const today = new Date();
+        const nextYear = new Date(today.setFullYear(today.getFullYear() + 1));
+        document.getElementById('expiryDate').textContent = nextYear.toLocaleDateString(undefined, options);
+    });
+</script>
+{% endblock %}

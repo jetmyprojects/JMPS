@@ -1,0 +1,402 @@
+{% extends 'account_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Complete Profile{% endblock %}
+
+{% block css_framework %}
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    brand: {
+                        green: '#4EA72E',
+                        orange: '#BE5103',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    }
+                },
+                fontFamily: {
+                    sans: ['Outfit', 'sans-serif'],
+                },
+                keyframes: {
+                    slideIn: {
+                        '0%': { transform: 'translateX(100%)', opacity: '0' },
+                        '100%': { transform: 'translateX(0)', opacity: '1' },
+                    }
+                },
+                animation: {
+                    slideIn: 'slideIn 0.3s ease-out forwards',
+                }
+            }
+        }
+    }
+</script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="icon" type="image/png" href="{% static 'ImageFaviconx.png' %}">
+
+<!-- Global CSS -->
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block body_class %}min-h-screen font-sans bg-white overflow-hidden{% endblock %}
+
+{% block toast_container %}
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+{% endblock %}
+
+{% block content %}
+<div class="flex h-screen w-full">
+    <!-- Left Side: Image -->
+    <div class="hidden lg:flex w-1/2 relative bg-slate-900 items-center justify-center overflow-hidden">
+        <!-- Background Image -->
+        <div class="absolute inset-0 z-0">
+            <img src="{% static 'ImageSignUp.jpg' %}"
+                class="w-full h-full object-cover opacity-60 transition-transform duration-[20s] hover:scale-110"
+                alt="Workspace">
+        </div>
+
+        <!-- Logo (Top Left) -->
+        <div class="absolute top-5 left-5 z-20">
+            <a href="{% url 'index' %}" class="logo" target="_blank"
+                style="display: flex; align-items: center; text-decoration: none;">
+                <img src="{% static 'ImageLogox.png' %}" alt="JetMyProjects Logo" style="height: 32px;">
+                JetMyProjects
+            </a>
+        </div>
+
+        <!-- Overlay Content -->
+        <div class="relative z-10 px-16 text-center text-white max-w-2xl">
+            <h2 class="text-4xl xl:text-5xl font-bold mb-4 leading-tight">Complete Your Profile</h2>
+            <p class="text-lg text-slate-200 leading-relaxed">Tell us a bit more about yourself to get started with
+                your personalized dashboard.</p>
+        </div>
+
+        <!-- Gradient Overlay -->
+        <div
+            class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent z-0 pointer-events-none">
+        </div>
+    </div>
+
+    <!-- Right Side: Form -->
+    <div class="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 bg-white h-full relative">
+        <!-- Mobile Logo -->
+        <div class="lg:hidden absolute top-6 left-6">
+            <a href="https://www.jetmyprojects.com/" target="_blank">
+                <img src="{% static 'ImageLogox.png' %}" alt="Logo" class="h-10">
+            </a>
+        </div>
+
+        <div class="w-full max-w-[500px] space-y-6">
+            <!-- Header -->
+            <div class="text-center">
+                <h1 class="text-2xl font-bold text-slate-800 mb-1">Personal Details</h1>
+                <p class="text-slate-500 text-sm">Please fill in your information.</p>
+            </div>
+
+            <!-- Form -->
+            <form action="#" onsubmit="return false;" id="profileForm" class="space-y-4">
+
+                <!-- Name Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- First Name -->
+                    <div class="relative">
+                        <input type="text" id="fname" name="fname" required maxlength="128"
+                            class="peer w-full px-4 pt-5 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none focus:border-brand-green focus:bg-white transition-all text-slate-800 placeholder-transparent text-sm"
+                            placeholder="First Name">
+                        <label for="fname"
+                            class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:translate-y-0 peer-focus:scale-90 peer-focus:text-brand-green peer-[&:not(:placeholder-shown)]:top-1 peer-[&:not(:placeholder-shown)]:translate-y-0 peer-[&:not(:placeholder-shown)]:scale-90 peer-[&:not(:placeholder-shown)]:text-slate-500 origin-left bg-white px-1 ml-[-4px]">
+                            First Name
+                        </label>
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="relative">
+                        <input type="text" id="lname" name="lname" required maxlength="128"
+                            class="peer w-full px-4 pt-5 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none focus:border-brand-green focus:bg-white transition-all text-slate-800 placeholder-transparent text-sm"
+                            placeholder="Last Name">
+                        <label for="lname"
+                            class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:translate-y-0 peer-focus:scale-90 peer-focus:text-brand-green peer-[&:not(:placeholder-shown)]:top-1 peer-[&:not(:placeholder-shown)]:translate-y-0 peer-[&:not(:placeholder-shown)]:scale-90 peer-[&:not(:placeholder-shown)]:text-slate-500 origin-left bg-white px-1 ml-[-4px]">
+                            Last Name
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Organization -->
+                <div class="relative">
+                    <input type="text" id="Organization" name="Organization" required maxlength="128"
+                        class="peer w-full px-4 pt-5 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none focus:border-brand-green focus:bg-white transition-all text-slate-800 placeholder-transparent text-sm"
+                        placeholder="Organization">
+                    <label for="Organization"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:translate-y-0 peer-focus:scale-90 peer-focus:text-brand-green peer-[&:not(:placeholder-shown)]:top-1 peer-[&:not(:placeholder-shown)]:translate-y-0 peer-[&:not(:placeholder-shown)]:scale-90 peer-[&:not(:placeholder-shown)]:text-slate-500 origin-left bg-white px-1 ml-[-4px]">
+                        Organization
+                    </label>
+                </div>
+
+                <!-- Zip Code -->
+                <div class="relative">
+                    <input type="text" id="res_zipcode" name="res_zipcode" required minlength="5" maxlength="10"
+                        class="peer w-full px-4 pt-5 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none focus:border-brand-green focus:bg-white transition-all text-slate-800 placeholder-transparent text-sm"
+                        placeholder="Residential Zip Code">
+                    <label for="res_zipcode"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:translate-y-0 peer-focus:scale-90 peer-focus:text-brand-green peer-[&:not(:placeholder-shown)]:top-1 peer-[&:not(:placeholder-shown)]:translate-y-0 peer-[&:not(:placeholder-shown)]:scale-90 peer-[&:not(:placeholder-shown)]:text-slate-500 origin-left bg-white px-1 ml-[-4px]">
+                        Residential Zip Code
+                    </label>
+                </div>
+
+                <!-- Referral Code Section -->
+                <div class="space-y-2">
+                    <div class="relative">
+                        <input type="text" id="referral_code" name="referral_code"
+                            class="peer w-full px-4 pt-5 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none focus:border-brand-green focus:bg-white transition-all text-slate-800 placeholder-transparent text-sm"
+                            placeholder="Referral Code">
+                        <label for="referral_code"
+                            class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-sm peer-focus:top-1 peer-focus:translate-y-0 peer-focus:scale-90 peer-focus:text-brand-green peer-[&:not(:placeholder-shown)]:top-1 peer-[&:not(:placeholder-shown)]:translate-y-0 peer-[&:not(:placeholder-shown)]:scale-90 peer-[&:not(:placeholder-shown)]:text-slate-500 origin-left bg-white px-1 ml-[-4px]">
+                            Referral Code (Optional)
+                        </label>
+                        <button type="button" id="verifyRefBtn"
+                            class="absolute right-3 top-2.5 px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold transition-all">
+                            Apply
+                        </button>
+                    </div>
+                    <div id="refMessage" class="text-xs px-2 hidden"></div>
+                </div>
+
+
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn"
+                    class="w-full py-3.5 rounded-xl bg-brand-orange text-white font-bold shadow-lg shadow-orange-200 transform transition-all duration-200 hover:shadow-xl hover:bg-brand-green hover:-translate-y-1 active:translate-y-0 text-sm">
+                    Complete Profile
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toast Notification System
+    function showNotification(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            warning: 'bg-yellow-500',
+            info: 'bg-blue-500'
+        };
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+
+        toast.className = `${colors[type]} text-white px-6 py-4 rounded-xl shadow-xl flex items-center min-w-[300px] animate-[slideIn_0.3s_ease-out]`;
+        toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl mr-3"></i>
+                <span class="font-medium">${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-auto text-white/80 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-x-full', 'transition-all', 'duration-500');
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('profileForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const refBtn = document.getElementById('verifyRefBtn');
+        const refInput = document.getElementById('referral_code');
+        const refMsg = document.getElementById('refMessage');
+
+        // Track verification status
+        let isCodeVerified = false;
+
+        // Reset verification on input change
+        refInput.addEventListener('input', function () {
+            if (isCodeVerified || refMsg.innerText) {
+                isCodeVerified = false;
+                refInput.classList.remove('border-brand-green');
+                refInput.classList.add('border-slate-200');
+                refBtn.className = "absolute right-3 top-2.5 px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold transition-all";
+                refBtn.innerHTML = 'Verify';
+                refBtn.disabled = false;
+                refMsg.classList.add('hidden');
+                refMsg.innerText = '';
+                localStorage.removeItem('applied_discount_code');
+            }
+        });
+
+        refBtn.addEventListener('click', async function () {
+            const code = refInput.value.trim();
+            if (!code) return;
+
+            refBtn.disabled = true;
+            refBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            refMsg.className = "text-xs px-2 text-slate-500";
+            refMsg.innerText = "Checking...";
+            refMsg.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/v1/payments/validate-discount/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+                const data = await response.json();
+
+                if (data.valid) {
+                    isCodeVerified = true;
+                    refMsg.className = "text-xs px-2 text-brand-green font-bold";
+                    refMsg.innerText = "Code applied! " + (data.type === 'trial' ? `Free Trial (${data.duration_months} mo)` : `${data.discount_percent}% Discount`);
+                    refInput.classList.add('border-brand-green');
+                    refInput.classList.remove('border-slate-200');
+                    refBtn.className = "absolute right-3 top-2.5 px-3 py-1 bg-brand-green text-white rounded-lg text-xs font-bold";
+                    refBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    localStorage.setItem('applied_discount_code', code);
+                } else {
+                    isCodeVerified = false;
+                    refMsg.className = "text-xs px-2 text-red-500 font-bold";
+                    refMsg.innerText = data.error || "Invalid code";
+                    refBtn.disabled = false;
+                    refBtn.innerText = "Verify";
+                    localStorage.removeItem('applied_discount_code');
+                }
+            } catch (e) {
+                isCodeVerified = false;
+                refMsg.innerText = "Error verifying code";
+                refBtn.disabled = false;
+                refBtn.innerText = "Verify";
+            }
+        });
+
+        // Check for stored credentials from Step 1
+        const email = sessionStorage.getItem('signup_email');
+        const password = sessionStorage.getItem('signup_password');
+
+        if (!email || !password) {
+            showNotification('Session expired or invalid access. Redirecting to signup...', 'error');
+            setTimeout(() => window.location.href = '/signup/', 1500);
+            return;
+        }
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+
+            // Loading State
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Creating Account...';
+
+            // Use verified code ONLY
+            const finalCode = isCodeVerified ? refInput.value.trim() : "";
+
+            // Auto-Detect Timezone
+            const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
+            // Prepare Payload
+            const payload = {
+                email: email,
+                password: password,
+                first_name: formData.get('fname'),
+                last_name: formData.get('lname'),
+                organisation_name: formData.get('Organization'),
+                zip_code: formData.get('res_zipcode'),
+                referral_code: finalCode,
+                timezone: detectedTimezone
+            };
+
+            try {
+                const response = await fetch('/api/v1/accounts/auth/signup/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showNotification('Account Created Successfully!', 'success');
+
+                    // Clear sensitive data from storage
+                    sessionStorage.removeItem('signup_email');
+                    sessionStorage.removeItem('signup_password');
+
+                    // Redirect to OTP Verification
+                    setTimeout(() => window.location.href = `/signup/otp/?email=${encodeURIComponent(payload.email)}`, 1500);
+                } else {
+
+                    // Handle Errors
+                    console.error('Signup error:', data);
+                    let errorMsg = 'Signup Failed';
+
+                    if (data.email) {
+                        const emailErr = Array.isArray(data.email) ? data.email[0] : data.email;
+                        errorMsg = 'Email: ' + emailErr;
+
+                        if (typeof emailErr === 'string' && (emailErr.includes('already registered') || emailErr.includes('already exists'))) {
+                            errorMsg = 'Account already exists. Please <a href="/login/" class="underline font-bold">Log In</a> instead.';
+                            showNotification(errorMsg, 'warning');
+                            setTimeout(() => window.location.href = '/login/', 3000);
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalBtnText;
+                            return;
+                        }
+                    } else if (data.password) {
+                        errorMsg = 'Password: ' + (Array.isArray(data.password) ? data.password[0] : data.password);
+                    } else if (data.detail) {
+                        errorMsg = data.detail;
+                    } else if (data.message) {
+                        errorMsg = data.message;
+                    } else {
+                        const keys = Object.keys(data);
+                        if (keys.length > 0) {
+                            const firstKey = keys[0];
+                            const firstVal = data[firstKey];
+                            const valStr = Array.isArray(firstVal) ? firstVal[0] : firstVal;
+                            errorMsg = `${firstKey}: ${valStr}`;
+                        }
+                    }
+
+                    if (typeof errorMsg === 'object') errorMsg = JSON.stringify(errorMsg);
+                    showNotification(errorMsg, 'error');
+
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            } catch (error) {
+                console.error('Fetch/Network Error:', error);
+                let debugMsg = error.toString();
+                if (error.name === 'SyntaxError') {
+                    debugMsg = "Server Error (Invalid JSON). usage: " + debugMsg;
+                }
+                showNotification('Debug Error: ' + debugMsg, 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+    });
+</script>
+{% endblock %}

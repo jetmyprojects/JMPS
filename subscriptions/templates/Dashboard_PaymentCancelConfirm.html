@@ -1,0 +1,73 @@
+{% extends 'task_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Subscription Cancelled{% endblock %}
+
+{% block header_title %}Subscription Cancelled{% endblock %}
+
+{% block extra_css %}
+<style>
+
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <div class="container-fluid">
+        <div class="confirm-card">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 class="section-title">Subscription Cancelled</h2>
+
+            <div id="refund-alert" class="refund-notice" style="display: none;"></div>
+
+            <div class="access-info">
+                <p class="farewell-text">We're sad to see you go.</p>
+                <p id="access-text">Your subscription has been cancelled.</p>
+            </div>
+
+            <div class="cta-actions">
+                <a href="/dashboard/billing/history/" class="btn-modern-home">
+                    Back
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Show refund message if exists
+        const msg = localStorage.getItem('cancel_message');
+        if (msg) {
+            const alert = document.getElementById('refund-alert');
+            alert.innerText = msg;
+            alert.style.display = 'block';
+            localStorage.removeItem('cancel_message'); // Clean up
+        }
+
+        try {
+            const response = await ApiClient.fetch('/api/v1/billing/plan/');
+            const accessEl = document.getElementById('access-text');
+            if (response.ok) {
+                const sub = await response.json();
+                if (sub.end_date) {
+                    const date = new Date(sub.end_date).toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    });
+                    accessEl.innerText = `Premium access has been revoked. Valid until: ${date}`;
+                } else {
+                    accessEl.innerText = "Premium access has been revoked.";
+                }
+            } else {
+                accessEl.innerText = "Premium access has been revoked.";
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+</script>
+{% endblock %}

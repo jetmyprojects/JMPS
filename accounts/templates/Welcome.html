@@ -1,0 +1,56 @@
+{% extends 'account_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Welcome{% endblock %}
+
+{% block css_framework %}
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    brand: {
+                        green: '#4EA72E',
+                        orange: '#BE5103',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    }
+                },
+                fontFamily: {
+                    sans: ['Outfit', 'sans-serif'],
+                },
+            }
+        }
+    }
+</script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="icon" type="image/png" href="{% static 'ImageFaviconx.png' %}">
+{% endblock %}
+
+{% block content %}
+<div class="flex h-screen w-full items-center justify-center bg-slate-50">
+    <div class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-lg w-full">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-check text-4xl text-brand-green"></i>
+        </div>
+
+        <h1 class="text-3xl font-bold text-slate-800 mb-4">Welcome to JetMyProjects!</h1>
+        <p class="text-slate-600 mb-8 text-lg">Your account is now ready. Start
+            organizing your projects today.</p>
+
+        <a href="{% url 'dashboard' %}"
+            class="inline-block w-full py-4 text-center rounded-xl bg-brand-orange text-white font-bold shadow-lg hover:bg-orange-700 transition-all text-lg">
+            Go to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

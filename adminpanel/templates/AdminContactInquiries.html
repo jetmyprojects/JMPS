@@ -1,0 +1,101 @@
+{% extends 'BaseAdmin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h3 mb-2 text-gray-800">Contact Inquiries</h1>
+        <p class="mb-4">Manage incoming inquiries from the Contact Sales form.</p>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3" style="border-top: 4px solid #BE5103;">
+        <h6 class="m-0 font-weight-bold" style="color: #BE5103;">Inquiries List</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inquiry in inquiries %}
+                    <tr>
+                        <td>{{ inquiry.created_at|date:"M d, Y" }}</td>
+                        <td>{{ inquiry.first_name }} {{ inquiry.last_name }}</td>
+
+                        <td><a href="mailto:{{ inquiry.email }}" style="color: #BE5103;">{{ inquiry.email }}</a></td>
+                        <td>
+                            {% if inquiry.status == 'NEW' %}
+                            <span class="badge bg-success">New</span>
+                            {% elif inquiry.status == 'REPLIED' %}
+                            <span class="badge bg-secondary">Replied</span>
+                            {% else %}
+                            <span class="badge bg-dark">{{ inquiry.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_contact_inquiry_detail' inquiry.id %}" class="btn btn-sm text-white"
+                                style="background-color: #BE5103; border-color: #BE5103;">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No inquiries found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Django Pagination -->
+        {% if inquiries.has_other_pages %}
+        <nav aria-label="Inquiries pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if inquiries.has_previous %}
+                <li class="page-item">
+                    <a class="page-link text-dark" href="?page={{ inquiries.previous_page_number }}">&laquo;
+                        Previous</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo; Previous</span>
+                </li>
+                {% endif %}
+
+                {% for i in inquiries.paginator.page_range %}
+                {% if inquiries.number == i %}
+                <li class="page-item active">
+                    <span class="page-link" style="background-color: #BE5103; border-color: #BE5103;">{{ i }}</span>
+                </li>
+                {% elif i > inquiries.number|add:'-3' and i < inquiries.number|add:'3' %} <li class="page-item">
+                    <a class="page-link text-dark" href="?page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if inquiries.has_next %}
+                    <li class="page-item">
+                        <a class="page-link text-dark" href="?page={{ inquiries.next_page_number }}">Next &raquo;</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next &raquo;</span>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

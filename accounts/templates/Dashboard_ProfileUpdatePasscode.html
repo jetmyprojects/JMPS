@@ -1,0 +1,150 @@
+﻿{% extends 'task_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Verify Profile Update{% endblock %}
+
+{% block header_title %}Profile{% endblock %}
+
+{% block nav_active_projects %}{% endblock %}
+{% block nav_active_profile %}active-link{% endblock %}
+
+{% block mobile_nav_active_projects %}{% endblock %}
+{% block mobile_nav_active_profile %}active-link text-primary fw-bold{% endblock %}
+
+{% block mobile_project_types %}{% endblock %}
+
+{% block content %}
+<main class="content-area">
+    <!-- Title Section -->
+    <h2 class="section-title" style="color: #BE5103; font-weight: 700; margin-bottom: 1.5rem;">Verify Profile Update
+    </h2>
+
+    <div class="verify-container">
+        <p class="text-muted mb-4">We sent a verification code to <span id="email-display"
+                class="fw-bold text-dark">your email address</span> to confirm your profile
+            changes. Please enter it below.
+        </p>
+
+        <form id="otpForm" onsubmit="return false;">
+            <div class="mb-3">
+                <label for="passcodeField" class="form-label fw-bold">Enter Passcode</label>
+                <input type="password" class="form-control" id="passcodeField" required maxlength="6"
+                    style="padding: 0.75rem;">
+            </div>
+
+            <div class="mb-4 form-check">
+                <input type="checkbox" class="form-check-input" id="showPasscode">
+                <label class="form-check-label" for="showPasscode">Show Passcode</label>
+            </div>
+
+            <button type="submit" class="btn w-100 py-2 mb-3" id="submitBtn"
+                style="background-color: #BE5103; color: white; border: none; font-weight: 600;">Submit</button>
+
+            <div id="countdown-area">
+                <a href="#" id="resendLink" class="resend-link-custom" onclick="window.resendCode(event)"
+                    style="color: #BE5103; text-decoration: none;">Resend Passcode Now</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        (function () {
+            const init = () => {
+                const passcodeField = document.getElementById('passcodeField');
+                const showPasscode = document.getElementById('showPasscode');
+                const submitBtn = document.getElementById('submitBtn');
+                const form = document.getElementById('otpForm');
+
+                // Toggle Visibility
+                if (showPasscode && passcodeField) {
+                    showPasscode.addEventListener('change', () => {
+                        passcodeField.type = showPasscode.checked ? 'text' : 'password';
+                    });
+                }
+
+                // Submit OTP
+                if (form) {
+                    form.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const otp = passcodeField.value;
+
+                        if (!otp || otp.length < 6) {
+                            if (window.showNotification) showNotification('Please enter a valid 6-digit passcode.', 'error');
+                            else alert('Please enter a valid 6-digit passcode.');
+                            return;
+                        }
+
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = 'Verifying...';
+
+                        try {
+                            const response = await window.ApiClient.fetch('/api/v1/accounts/profile/update/verify/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ otp: otp })
+                            });
+
+                            const data = await response.json();
+
+                            if (response.ok) {
+                                if (window.showNotification) showNotification('Profile updated successfully!', 'success');
+                                setTimeout(() => window.location.href = '/dashboard/profile/', 1500);
+                            } else {
+                                if (window.showNotification) showNotification(data.error || 'Verification failed.', 'error');
+                                else alert(data.error || 'Verification failed.');
+                                submitBtn.disabled = false;
+                                submitBtn.textContent = 'Submit';
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            if (window.showNotification) showNotification('Network error. Please try again.', 'error');
+                            else alert('Network error. Please try again.');
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Submit';
+                        }
+                    });
+                }
+            };
+
+            // Run on load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+            // Global function for resend
+            window.resendCode = async function (event) {
+                event.preventDefault();
+                const link = event.target;
+
+                link.style.pointerEvents = 'none';
+                link.textContent = 'Sending...';
+
+                try {
+                    const response = await window.ApiClient.fetch('/api/v1/accounts/profile/update/resend/', {
+                        method: 'POST'
+                    });
+
+                    if (response.ok) {
+                        if (window.showNotification) showNotification('Passcode resent!', 'success');
+                        else alert('Passcode resent!');
+                    } else {
+                        if (window.showNotification) showNotification('Could not resend code.', 'error');
+                        else alert('Could not resend code.');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    if (window.showNotification) showNotification('Error resending code.', 'error');
+                    else alert('Error resending code.');
+                } finally {
+                    link.textContent = 'Resend Passcode Now';
+                    link.style.pointerEvents = 'auto';
+                }
+            }
+        })();
+    </script>
+</main>
+{% endblock %}

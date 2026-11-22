@@ -1,0 +1,682 @@
+{% extends 'task_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Projects{% endblock %}
+
+{% block mobile_active_label %}<span id="mobileActiveLabel">Loading...</span>{% endblock %}
+
+
+
+{% block content %}
+<main class="content-area">
+    <h2 class="section-title" id="pageTitle">Projects</h2>
+
+    <ul class="nav sub-nav d-none d-lg-flex">
+        <li class="nav-item"><a class="nav-link" href="#" onclick="loadTab('active'); return false;"
+                id="nav-active">Active</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="loadTab('draft'); return false;"
+                id="nav-draft">Draft</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="loadTab('completed'); return false;"
+                id="nav-completed">Completed</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="loadTab('uncompleted'); return false;"
+                id="nav-uncompleted">Not Completed</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="loadTab('deleted'); return false;"
+                id="nav-deleted">Deleted</a></li>
+    </ul>
+
+    <div class="table-responsive d-none d-lg-block">
+        <table class="table table-hover align-middle">
+            <thead id="taskTableHead">
+                <!-- Injected via JS -->
+            </thead>
+            <tbody id="taskTableBody">
+                <tr>
+                    <td colspan="6" class="text-center">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div id="mobileTaskList" class="d-lg-none">
+        <div class="text-center py-4 text-muted">Loading...</div>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div id="paginationControls" class="d-flex justify-content-center gap-2 mt-4">
+    </div>
+    <script>
+        var isAdmin = false;
+        var currentStatus = 'active';
+        var currentPage = 1;
+        var pageSize = 10;
+        var expiredTaskIds = new Set(); // Track notified tasks to prevent duplicates
+
+        // Config for each status type
+        var STATUS_CONFIG = {
+            'active': {
+                title: 'Active Projects',
+                icon: 'fa-play-circle',
+                mobileClass: '',
+                url: '/api/v1/tasks/active/'
+            },
+            'draft': {
+                title: 'Draft Projects',
+                icon: 'fa-file-alt',
+                mobileClass: 'text-primary',
+                url: '/api/v1/tasks/draft/'
+            },
+            'completed': {
+                title: 'Completed Projects',
+                icon: 'fa-check-double',
+                mobileClass: 'text-success',
+                url: '/api/v1/tasks/completed/'
+            },
+            'uncompleted': {
+                title: 'Not Completed Projects',
+                icon: 'fa-times-circle',
+                mobileClass: 'text-danger',
+                url: '/api/v1/tasks/uncompleted/'
+            },
+            'deleted': {
+                title: 'Deleted Projects',
+                icon: 'fa-trash-alt',
+                mobileClass: 'text-danger',
+                url: '/api/v1/tasks/deleted/'
+            }
+        };
+
+        function initTasksPage() {
+            console.log('Initializing Tasks Page...'); // Debug
+
+            // 1. Initial Profile Load (Server Injected)
+            isAdmin = "{{ is_admin|yesno:'true,false' }}" === "true";
+
+            // 2. Determine initial tab from URL
+            const path = window.location.pathname;
+            if (path.includes('/active/')) currentStatus = 'active';
+            else if (path.includes('/draft/')) currentStatus = 'draft';
+            else if (path.includes('/completed/')) currentStatus = 'completed';
+            else if (path.includes('/uncompleted/')) currentStatus = 'uncompleted';
+            else if (path.includes('/deleted/')) currentStatus = 'deleted';
+
+            // 3. Load the initial tab
+            try {
+                // Check if table exists before loading
+                if (document.getElementById('taskTableBody')) {
+                    loadTab(currentStatus, false);
+                }
+            } catch (e) {
+                console.error('Initial load failed', e);
+                const errHtml = `<tr><td colspan="6" class="text-center text-danger">Error loading page: ${e.message}</td></tr>`;
+                const tbody = document.getElementById('taskTableBody');
+                if (tbody) tbody.innerHTML = errHtml;
+            }
+
+            // 4. Handle Browser Back/Forward
+            window.onpopstate = function (event) {
+                const newPath = window.location.pathname;
+                let status = 'active';
+                if (newPath.includes('/draft/')) status = 'draft';
+                else if (newPath.includes('/completed/')) status = 'completed';
+                else if (newPath.includes('/uncompleted/')) status = 'uncompleted';
+                else if (newPath.includes('/deleted/')) status = 'deleted';
+
+                loadTab(status, false);
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', initTasksPage);
+
+        // Listen for custom SPA navigation event
+        if (!window.tasksListenerAdded) {
+            document.addEventListener('app:pageLoaded', (e) => {
+                const path = e.detail.path;
+                // Only run for list tabs, NOT for details (<id>/) or edit (<id>/edit/)
+                const isListPath = /\/projects\/tasks\/(active|draft|completed|uncompleted|deleted)\/$/.test(path);
+
+                if (isListPath && document.getElementById('taskTableBody')) {
+                    initTasksPage();
+                }
+            });
+            window.tasksListenerAdded = true;
+        }
+
+        function loadTab(status, pushState = true) {
+            try {
+                currentStatus = status;
+                currentPage = 1;
+
+                // UI Updates
+                document.querySelectorAll('.sub-nav .nav-link').forEach(el => el.classList.remove('active'));
+                const activeNav = document.getElementById(`nav-${status}`);
+                if (activeNav) activeNav.classList.add('active');
+
+                document.querySelectorAll('.mobile-dropdown-container .sidebar-item').forEach(el => el.classList.remove('fw-bold'));
+                const activeMobile = document.getElementById(`mobile-nav-${status}`);
+                if (activeMobile) activeMobile.classList.add('fw-bold');
+
+                const config = STATUS_CONFIG[status];
+                if (!config) throw new Error(`Invalid status: ${status}`);
+
+                document.getElementById('pageTitle').innerText = config.title;
+                const mobileLabel = document.getElementById('mobileActiveLabel');
+                if (mobileLabel) mobileLabel.innerText = config.title;
+
+                if (pushState) {
+                    const newUrl = `/projects/tasks/${status}/`;
+                    history.pushState({ status: status }, config.title, newUrl);
+                }
+
+                // Show Loading
+                document.getElementById('taskTableBody').innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+                const mobileList = document.getElementById('mobileTaskList');
+                if (mobileList) mobileList.innerHTML = '<div class="text-center py-4 text-muted">Loading...</div>';
+
+                // Render Head
+                renderTableHead(status);
+
+                // Fetch
+                fetchTasks(1);
+            } catch (e) {
+                console.error('loadTab error', e);
+                document.getElementById('taskTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error: ${e.message}</td></tr>`;
+            }
+        }
+
+        async function fetchTasks(page = 1) {
+            currentPage = page;
+            const config = STATUS_CONFIG[currentStatus];
+            if (!config) return;
+
+            const url = `${config.url}?page=${page}&page_size=${pageSize}`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+            try {
+                const response = await ApiClient.fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const tasks = data.results || data;
+                    renderTableBody(tasks);
+                    renderPagination(data);
+
+                    if (currentStatus === 'active') {
+                        if (window.timerInterval) clearInterval(window.timerInterval);
+                        window.timerInterval = setInterval(updateTimers, 1000);
+                        updateTimers();
+                    } else {
+                        if (window.timerInterval) clearInterval(window.timerInterval);
+                    }
+                } else {
+                    console.error('Failed to fetch tasks', response.status);
+                    let msg = 'Failed to load data.';
+                    try {
+                        const errData = await response.json();
+                        if (errData.detail) msg += ` ${errData.detail}`;
+                    } catch (e) { }
+
+                    document.getElementById('taskTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">${msg}</td></tr>`;
+                    const mobileList = document.getElementById('mobileTaskList');
+                    if (mobileList) mobileList.innerHTML = `<div class="text-center py-4 text-danger">${msg}</div>`;
+                }
+            } catch (e) {
+                clearTimeout(timeoutId);
+                console.error('Fetch error:', e);
+                let errorMsg = 'Network error.';
+                if (e.name === 'AbortError') errorMsg = 'Request timed out.';
+
+                document.getElementById('taskTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">${errorMsg}</td></tr>`;
+                const mobileList = document.getElementById('mobileTaskList');
+                if (mobileList) mobileList.innerHTML = `<div class="text-center py-4 text-danger">${errorMsg}</div>`;
+            }
+        }
+
+        function renderTableHead(status) {
+            const thead = document.getElementById('taskTableHead');
+            if (!thead) return;
+
+            let html = `<tr>
+            <th>Project ID</th>
+            <th>Project Name</th>`;
+
+            if (status === 'active') {
+                html += `
+            <th>Deadline Date</th>
+            <th>Deadline Time</th>
+            <th>Time Left</th>`;
+            } else if (status === 'draft') {
+                html += `
+            <th>Creation Date</th>
+            <th>Deadline Date</th>
+            <th>Deadline Time</th>`;
+            } else if (status === 'completed') {
+                html += `
+            <th>Deadline Date</th>
+            <th>Deadline Time</th>
+            <th>Completion Date</th>`;
+            } else if (status === 'uncompleted') {
+                html += `
+            <th>Deadline Date</th>
+            <th>Deadline Time</th>`;
+            } else if (status === 'deleted') {
+                html += `
+            <th>Deadline Date</th>
+            <th>Deadline Time</th>
+            <th>Source</th>`;
+            }
+
+            html += `<th>Actions</th></tr>`;
+            thead.innerHTML = html;
+        }
+
+        function renderTableBody(tasks) {
+            const tbody = document.getElementById('taskTableBody');
+            const mobileList = document.getElementById('mobileTaskList');
+            if (!tbody || !mobileList) return;
+
+            tbody.innerHTML = '';
+            mobileList.innerHTML = '';
+            expiredTaskIds.clear(); // Reset tracking on reload
+
+            if (!tasks || tasks.length === 0) {
+                const config = STATUS_CONFIG[currentStatus];
+                let msg = `No ${config ? config.title.toLowerCase() : 'projects'} found.`;
+                if (currentStatus === 'active') {
+                    msg = 'No active project available at the moment.';
+                } else if (currentStatus === 'draft') {
+                    msg = 'No draft projects have been created yet.';
+                } else if (currentStatus === 'completed') {
+                    msg = 'No completed projects available.';
+                } else if (currentStatus === 'uncompleted') {
+                    msg = 'There are currently no ongoing projects.';
+                } else if (currentStatus === 'deleted') {
+                    msg = 'No archived projects found.';
+                }
+                let colSpan = 6;
+                if (currentStatus === 'uncompleted') colSpan = 5;
+
+                tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">${msg}</td></tr>`;
+                mobileList.innerHTML = `<div class="text-center py-4 text-muted">${msg}</div>`;
+                return;
+            }
+
+            tasks.forEach(task => {
+                const displayId = isAdmin ? task.id : (task.project_id || task.id);
+                const tr = document.createElement('tr');
+
+                // Common Date Formatters
+                const formatDate = (d) => {
+                    if (!d) return '-';
+                    // If it's YYYY-MM-DD
+                    if (d.includes('-') && d.length === 10) {
+                        const [y, m, day] = d.split('-');
+                        return new Date(y, m - 1, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    }
+                    // ISO string
+                    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                };
+                const formatTime = (t) => {
+                    if (!t) return '-';
+                    const [h, m, s] = t.split(':');
+                    const d = new Date();
+                    d.setHours(h, m, s || 0);
+                    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                };
+
+                const deadlineDate = formatDate(task.deadline_date);
+                const deadlineTime = formatTime(task.deadline_time);
+
+                // --- Construct Desktop Row HTML ---
+                let rowHtml = `<td>${displayId}</td><td><strong>${task.project_name}</strong></td>`;
+
+                if (currentStatus === 'active') {
+                    let deadlineISO = null;
+                    if (task.deadline_date) {
+                        const time = task.deadline_time || '23:59:59';
+                        deadlineISO = `${task.deadline_date}T${time}`;
+                    }
+                    rowHtml += `<td>${deadlineDate}</td>
+                            <td>${deadlineTime}</td>
+                            <td><span class="timer-badge badge bg-secondary" data-deadline="${deadlineISO}" data-task-id="${task.id}" data-task-name="${task.project_name}">Calculating...</span></td>`;
+                } else if (currentStatus === 'draft') {
+                    const creationDate = formatDate(task.created_at);
+                    rowHtml += `<td>${creationDate}</td>
+                            <td>${deadlineDate}</td>
+                            <td>${deadlineTime}</td>`;
+                } else if (currentStatus === 'completed') {
+                    const completionDate = formatDate(task.updated_at); // Assuming updated_at is completion for completed tasks
+                    rowHtml += `<td>${deadlineDate}</td>
+                            <td>${deadlineTime}</td>
+                            <td>${completionDate}</td>`;
+                } else if (currentStatus === 'uncompleted') {
+                    rowHtml += `<td>${deadlineDate}</td>
+                            <td>${deadlineTime}</td>`;
+                } else if (currentStatus === 'deleted') {
+                    let sourceDisplay = 'Unknown';
+                    if (task.previous_status) {
+                        if (task.previous_status === 'UNCOMPLETED') sourceDisplay = 'Not Completed';
+                        else if (task.previous_status === 'COMPLETED') sourceDisplay = 'Completed';
+                        else if (task.previous_status === 'ACTIVE') sourceDisplay = 'Active';
+                        else if (task.previous_status === 'DRAFT') sourceDisplay = 'Draft';
+                        else sourceDisplay = task.previous_status.charAt(0).toUpperCase() + task.previous_status.slice(1).toLowerCase();
+                    }
+                    rowHtml += `<td>${deadlineDate}</td>
+                            <td>${deadlineTime}</td>
+                            <td>${sourceDisplay}</td>`;
+                }
+
+                // Actions
+                rowHtml += `<td><div class="btn-group">`;
+                rowHtml += `<a href="/projects/tasks/${task.id}/" class="btn btn-outline-secondary btn-action d-flex align-items-center justify-content-center spa-link" title="View"><i class="fas fa-eye"></i></a>`;
+
+                if (currentStatus === 'active') {
+                    rowHtml += `<a href="/projects/tasks/${task.id}/edit/" class="btn btn-outline-secondary btn-action d-flex align-items-center justify-content-center spa-link" title="Edit"><i class="fas fa-pencil-alt"></i></a>
+                            <button class="btn btn-outline-primary btn-action" onclick="duplicateTask(${task.id})" title="Duplicate"><i class="fas fa-copy"></i></button>
+                            <button class="btn btn-outline-success btn-action" onclick="markComplete(${task.id})" title="Done"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-outline-danger btn-action" onclick="deleteTask(${task.id})" title="Delete"><i class="fas fa-trash"></i></button>`;
+                } else if (currentStatus === 'draft') {
+                    rowHtml += `<a href="/projects/tasks/${task.id}/edit/" class="btn btn-outline-primary btn-action d-flex align-items-center justify-content-center spa-link" title="Edit"><i class="fas fa-pencil-alt"></i></a>
+                            <button class="btn btn-outline-success btn-action" onclick="activateTask(${task.id}, '${task.deadline_date}', '${task.deadline_time}')" title="Activate"><i class="fas fa-play-circle"></i></button>
+                            <button class="btn btn-outline-danger btn-action" onclick="deleteTask(${task.id})" title="Delete"><i class="fas fa-trash"></i></button>`;
+                } else if (currentStatus === 'completed') {
+                    rowHtml += `<button class="btn btn-outline-info btn-action" onclick="duplicateTask(${task.id})" title="Duplicate"><i class="fas fa-copy"></i></button>
+                             <button class="btn btn-outline-danger btn-action" onclick="deleteTask(${task.id})" title="Delete"><i class="fas fa-trash"></i></button>`;
+                } else if (currentStatus === 'uncompleted') {
+                    rowHtml += `<button class="btn btn-outline-info btn-action" onclick="duplicateTask(${task.id})" title="Duplicate"><i class="fas fa-copy"></i></button>
+                             <button class="btn btn-outline-danger btn-action" onclick="deleteTask(${task.id})" title="Delete"><i class="fas fa-trash"></i></button>`;
+                } else if (currentStatus === 'deleted') {
+                    rowHtml += `<button class="btn btn-outline-success btn-action" onclick="restoreTask(${task.id})" title="Restore"><i class="fas fa-trash-restore"></i></button>
+                             <button class="btn btn-outline-danger btn-action" onclick="permanentlyDeleteTask(${task.id})" title="Permanently Delete"><i class="fas fa-times-circle"></i></button>`;
+                }
+
+                rowHtml += `</div></td>`;
+                tr.innerHTML = rowHtml;
+                tbody.appendChild(tr);
+
+                // --- Construct Mobile Card HTML ---
+                const card = document.createElement('div');
+                card.className = 'mobile-task-card';
+
+                let cardHeader = `<div class="d-flex justify-content-between align-items-start mb-3"><div>
+                              <div class="text-muted small mb-1">ID: ${displayId}</div>
+                              <h5 class="mb-1 fw-bold text-dark">${task.project_name}</h5>`;
+
+                if (currentStatus === 'active') {
+                    let deadlineISO = null;
+                    if (task.deadline_date) {
+                        const time = task.deadline_time || '23:59:59';
+                        deadlineISO = `${task.deadline_date}T${time}`;
+                    }
+                    cardHeader += `</div><span class="timer-badge badge bg-secondary" data-deadline="${deadlineISO}" data-task-id="${task.id}" data-task-name="${task.project_name}">Calculating...</span></div>`;
+                } else if (currentStatus === 'completed') {
+                    const completionDate = formatDate(task.updated_at);
+                    cardHeader += `<span class="badge bg-success">Completed: ${completionDate}</span></div></div>`;
+                } else if (currentStatus === 'deleted') {
+                    let sourceDisplay = 'Unknown';
+                    if (task.previous_status) {
+                        if (task.previous_status === 'UNCOMPLETED') sourceDisplay = 'Not Completed';
+                        else if (task.previous_status === 'COMPLETED') sourceDisplay = 'Completed';
+                        else if (task.previous_status === 'ACTIVE') sourceDisplay = 'Active';
+                        else if (task.previous_status === 'DRAFT') sourceDisplay = 'Draft';
+                        else sourceDisplay = task.previous_status.charAt(0).toUpperCase() + task.previous_status.slice(1).toLowerCase();
+                    }
+                    cardHeader += `<span class="badge bg-secondary">Source: ${sourceDisplay}</span></div></div>`;
+                } else {
+                    const dateLabel = currentStatus === 'draft' ? formatDate(task.created_at) : '';
+                    cardHeader += `<div class="text-muted small">${dateLabel}</div></div></div>`;
+                }
+
+                let cardBody = `<div class="row g-2 mb-2">
+                <div class="col-6"><span class="card-label">Deadline Date</span><div class="card-value">${deadlineDate}</div></div>
+                <div class="col-6"><span class="card-label">Deadline Time</span><div class="card-value">${deadlineTime}</div></div>
+            </div>`;
+
+                let cardActions = `<div class="card-actions">
+                               <a href="/projects/tasks/${task.id}/" class="btn btn-light btn-sm spa-link"><i class="fas fa-eye text-secondary"></i></a>`;
+
+                if (currentStatus === 'active') {
+                    cardActions += `<a href="/projects/tasks/${task.id}/edit/" class="btn btn-light btn-sm spa-link"><i class="fas fa-pencil-alt text-secondary"></i></a>
+                                <button onclick="duplicateTask(${task.id})" class="btn btn-light btn-sm"><i class="fas fa-copy text-primary"></i></button>
+                                <button onclick="markComplete(${task.id})" class="btn btn-light btn-sm"><i class="fas fa-check text-success"></i></button>
+                                <button onclick="deleteTask(${task.id})" class="btn btn-light btn-sm"><i class="fas fa-trash text-danger"></i></button>`;
+                } else if (currentStatus === 'draft') {
+                    cardActions += `<a href="/projects/tasks/${task.id}/edit/" class="btn btn-light btn-sm spa-link"><i class="fas fa-pencil-alt text-primary"></i></a>
+                                <button onclick="activateTask(${task.id}, '${task.deadline_date}', '${task.deadline_time}')" class="btn btn-light btn-sm"><i class="fas fa-play-circle text-success"></i></button>
+                                <button onclick="deleteTask(${task.id})" class="btn btn-light btn-sm"><i class="fas fa-trash text-danger"></i></button>`;
+                } else if (currentStatus === 'completed') {
+                    cardActions += `<button onclick="duplicateTask(${task.id})" class="btn btn-light btn-sm"><i class="fas fa-copy text-info"></i> Duplicate</button>
+                                 <button onclick="deleteTask(${task.id})" class="btn btn-light btn-sm"><i class="fas fa-trash text-danger"></i> Delete</button>`;
+                } else if (currentStatus === 'uncompleted') {
+                    cardActions += `<button onclick="duplicateTask(${task.id})" class="btn btn-light btn-sm"><i class="fas fa-copy text-info"></i> Duplicate</button>
+                                 <button onclick="deleteTask(${task.id})" class="btn btn-light btn-sm"><i class="fas fa-trash text-danger"></i> Delete</button>`;
+                } else if (currentStatus === 'deleted') {
+                    cardActions += `<button onclick="restoreTask(${task.id})" class="btn btn-light btn-sm"><i class="fas fa-trash-restore text-success"></i> Restore</button>
+                                 <button onclick="permanentlyDeleteTask(${task.id})" class="btn btn-light btn-sm"><i class="fas fa-times-circle text-danger"></i> Delete Forever</button>`;
+                }
+
+                cardActions += `</div>`;
+                card.innerHTML = cardHeader + cardBody + cardActions;
+                mobileList.appendChild(card);
+            });
+        }
+
+        // --- Pagination (Reusable) ---
+        function renderPagination(data) {
+            const container = document.getElementById('paginationControls');
+            if (!container) return;
+            container.innerHTML = '';
+            if (!data.count) return;
+
+            const totalPages = Math.ceil(data.count / pageSize);
+            if (totalPages <= 1) return;
+
+            // Prev
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `btn btn-sm ${data.previous ? 'btn-outline-secondary' : 'btn-outline-secondary disabled'}`;
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.onclick = () => { if (data.previous) fetchTasks(currentPage - 1); };
+            container.appendChild(prevBtn);
+
+            // Pages
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+            if (currentPage <= 3) endPage = Math.min(5, totalPages);
+            if (currentPage >= totalPages - 2) startPage = Math.max(1, totalPages - 4);
+
+            if (startPage > 1) { addPageBtn(1, container); if (startPage > 2) addEllipsis(container); }
+            for (let i = startPage; i <= endPage; i++) addPageBtn(i, container);
+            if (endPage < totalPages) { if (endPage < totalPages - 1) addEllipsis(container); addPageBtn(totalPages, container); }
+
+            // Next
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `btn btn-sm ${data.next ? 'btn-outline-secondary' : 'btn-outline-secondary disabled'}`;
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.onclick = () => { if (data.next) fetchTasks(currentPage + 1); };
+            container.appendChild(nextBtn);
+        }
+
+        function addPageBtn(page, container) {
+            const btn = document.createElement('button');
+            const isActive = page === currentPage;
+            btn.className = `btn btn-sm ${isActive ? 'btn-brand-orange text-white w-auto' : 'btn-outline-secondary'}`;
+            btn.textContent = page;
+            btn.onclick = () => fetchTasks(page);
+            container.appendChild(btn);
+        }
+        function addEllipsis(container) {
+            const span = document.createElement('span');
+            span.className = 'px-2 text-muted';
+            span.textContent = '...';
+            container.appendChild(span);
+        }
+
+        // --- Actions (Consolidated) ---
+        // --- Actions (Consolidated) ---
+        async function markComplete(id) {
+            apiAction(`/api/v1/tasks/${id}/complete/`, 'POST', 'Project marked as completed', false, () => removeRow(id));
+        }
+        async function deleteTask(id) {
+            apiAction(`/api/v1/tasks/${id}/`, 'DELETE', 'Project deleted', false, () => removeRow(id));
+        }
+        async function duplicateTask(id) {
+            // For duplication, if we are in ACTIVE, the new task goes to DRAFT.
+            // So we don't need to reload the ACTIVE list, nor remove the current row.
+            // If we are in DRAFT, the new task is added. We could append, but reloading IS acceptable here to show the new item.
+            // However, for smooth UX, let's just notify if the list doesn't visually change immediately (e.g. Active/Completed).
+            // If in Draft, let's reload to show the new one.
+            const shouldReload = currentStatus === 'draft';
+
+            apiAction(`/api/v1/tasks/${id}/duplicate/`, 'POST', 'Project duplicated successfully! Check Drafts.', shouldReload, () => {
+                // No extra notification needed here, apiAction handles it.
+            });
+        }
+        async function activateTask(id, dateStr, timeStr) {
+            // Validate date
+            if (dateStr && dateStr !== 'null') {
+                const [y, m, d] = dateStr.split('-');
+                const deadline = new Date(y, m - 1, d);
+                if (timeStr && timeStr !== 'null') {
+                    const [h, min, s] = timeStr.split(':');
+                    deadline.setHours(h, min, s || 0);
+                } else deadline.setHours(23, 59, 59);
+
+                if (deadline < new Date()) {
+                    showNotification('Cannot activate: Deadline has passed.', 'warning');
+                    return;
+                }
+            }
+            apiAction(`/api/v1/tasks/${id}/activate/`, 'POST', 'Project activated', false, () => removeRow(id));
+        }
+        async function restoreTask(id) {
+            apiAction(`/api/v1/tasks/${id}/restore/`, 'POST', 'Project restored to Drafts', false, () => removeRow(id));
+        }
+        async function permanentlyDeleteTask(id) {
+            showConfirmationToast('Permanently delete this project? This cannot be undo.', () => {
+                apiAction(`/api/v1/tasks/${id}/permanent_delete/`, 'DELETE', 'Project permanently deleted', false, () => removeRow(id));
+            });
+        }
+
+        // Helper to remove row from DOM smoothly
+        function removeRow(id) {
+            // 1. Find the row in Desktop Table
+            const row = document.querySelector(`tr a[href*="/tasks/${id}/"]`)?.closest('tr');
+            if (row) {
+                row.style.transition = "all 0.5s ease";
+                row.style.opacity = "0";
+                setTimeout(() => row.remove(), 500);
+            }
+
+            // 2. Find the card in Mobile View
+            // The mobile card doesn't have a direct ID usually, but we can look for the button or link
+            const cardBtn = document.querySelector(`.mobile-task-card button[onclick*="Task(${id})"]`);
+            const card = cardBtn?.closest('.mobile-task-card');
+            if (card) {
+                card.style.transition = "all 0.5s ease";
+                card.style.opacity = "0";
+                setTimeout(() => card.remove(), 500);
+            }
+        }
+
+        async function apiAction(url, method, successMsg, reloadSameTab, callback) {
+            try {
+                const response = await ApiClient.fetch(url, { method: method });
+                if (response.ok) {
+                    // Always show notification if message provided
+                    if (successMsg) {
+                        showNotification(successMsg, 'success');
+                    }
+
+                    if (callback) {
+                        callback();
+                    } else if (reloadSameTab) {
+                        fetchTasks(currentPage);
+                    }
+                } else {
+                    if (response.status === 403) {
+                        showNotification('Permission denied. Upgrade plan?', 'error');
+                    } else {
+                        const err = await response.json();
+                        showNotification(err.detail || 'Action failed', 'error');
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                showNotification('Error performing action', 'error');
+            }
+        }
+
+        // --- Timers (Only Active) ---
+        function updateTimers() {
+            if (currentStatus !== 'active') return;
+            document.querySelectorAll('.timer-badge').forEach(el => {
+                const deadlineStr = el.getAttribute('data-deadline');
+                if (!deadlineStr || deadlineStr === 'null') { el.textContent = '-'; return; }
+
+                const diff = new Date(deadlineStr).getTime() - new Date().getTime();
+                if (diff < 0) {
+                    // Instant Expiry Logic
+                    if (!el.dataset.expiredProcessed) {
+                        el.dataset.expiredProcessed = "true";
+                        const taskId = el.getAttribute('data-task-id');
+                        const taskName = el.getAttribute('data-task-name');
+
+                        // Remove from view immediately
+                        // Remove from view immediately
+                        if (taskId) {
+                            // Deduplicate notifications (check if already processed globally)
+                            if (!expiredTaskIds.has(taskId)) {
+                                expiredTaskIds.add(taskId);
+                                removeRow(taskId);
+                                if (window.showNotification) {
+                                    showNotification(`Project '${taskName}' has expired.`, 'warning');
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    el.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                    el.className = days < 1 ? 'timer-badge badge bg-warning text-dark' : 'timer-badge badge bg-success';
+                }
+            });
+        }
+
+        // Toast helper (Copied from existing templates)
+        function showConfirmationToast(message, onConfirm) {
+            const toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                if (confirm(message)) onConfirm();
+                return;
+            }
+            const toastId = 'confirm-toast-' + Date.now();
+            const toastHtml = `
+            <div id="${toastId}" class="toast bg-white text-dark shadow-lg border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+                <div class="toast-body">
+                    <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-question-circle text-warning me-2 text-xl"></i>
+                            <span class="fw-medium">${message}</span>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-2">
+                        <button type="button" class="btn btn-sm btn-light border shadow-sm" data-bs-dismiss="toast">Cancel</button>
+                        <button type="button" class="btn btn-sm btn-success shadow-sm" id="${toastId}-confirm">Confirm</button>
+                    </div>
+                </div>
+            </div>`;
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = document.getElementById(toastId);
+            const bsToast = new bootstrap.Toast(toastElement, { autohide: false });
+            bsToast.show();
+            document.getElementById(`${toastId}-confirm`).addEventListener('click', () => { bsToast.hide(); onConfirm(); });
+            toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+        }
+    </script>
+</main>
+{% endblock %}
+
+{% block extra_js %}{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'task_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/payment.css' %}">
+{% endblock %}
+
+{% block header_title %}Payment{% endblock %}
+
+{% block nav_active_pricing %}active-link{% endblock %}
+{% block mobile_nav_active_pricing %}active-link text-primary fw-bold{% endblock %}
+
+{% block mobile_project_types %}{% endblock %}

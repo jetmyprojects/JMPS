@@ -1,0 +1,52 @@
+{% extends 'account_base.html' %}
+{% load static %}
+
+{% block title %}Access Expired{% endblock %}
+
+{% block css_framework %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+</style>
+{% endblock %}
+
+{% block body_class %}bg-gray-50 flex items-center justify-center min-h-screen p-4{% endblock %}
+
+{% block content %}
+<div class="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden text-center p-8">
+    <div class="mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-500 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Free Trial Ended</h2>
+        <p class="text-gray-600">Your 24-hour free access period has expired.</p>
+        <p class="text-gray-500 text-sm mt-2">To continue using the platform and access all your data, please
+            upgrade to a premium plan.</p>
+    </div>
+
+    <div class="space-y-3">
+        <a href="/#pricing"
+            class="block w-full py-3 px-4 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition-colors duration-200">
+            Upgrade Now
+        </a>
+
+        <a href="{% url 'fe_signout_confirm' %}"
+            class="block w-full py-3 px-4 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200">
+            Log Out
+        </a>
+    </div>
+
+    <div class="mt-6 text-xs text-gray-400">
+        Need help? <a href="https://jetmyprojects.com/#contact" class="underline hover:text-gray-600">Contact
+            Support</a>
+    </div>
+</div>
+{% endblock %}

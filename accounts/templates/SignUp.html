@@ -1,0 +1,408 @@
+{% extends 'account_base.html' %}
+{% load static %}
+
+{% block title %}JetMyProjects - Sign Up{% endblock %}
+
+{% block css_framework %}
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    brand: {
+                        green: '#4EA72E',
+                        orange: '#BE5103',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    }
+                },
+                fontFamily: {
+                    sans: ['Outfit', 'sans-serif'],
+                },
+                keyframes: {
+                    slideIn: {
+                        '0%': { transform: 'translateX(100%)', opacity: '0' },
+                        '100%': { transform: 'translateX(0)', opacity: '1' },
+                    }
+                },
+                animation: {
+                    slideIn: 'slideIn 0.3s ease-out forwards',
+                }
+            }
+        }
+    }
+</script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="icon" type="image/png" href="{% static 'ImageFaviconx.png' %}">
+
+<!-- Global CSS -->
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block body_class %}min-h-screen font-sans bg-white overflow-hidden{% endblock %}
+
+{% block toast_container %}
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+{% endblock %}
+
+{% block content %}
+<div class="flex h-screen w-full">
+    <!-- Left Side: Image -->
+    <div class="hidden lg:flex w-1/2 relative bg-slate-900 items-center justify-center overflow-hidden">
+        <!-- Background Image -->
+        <div class="absolute inset-0 z-0">
+            <img src="{% static 'ImageSignUp.jpg' %}"
+                class="w-full h-full object-cover opacity-60 transition-transform duration-[20s] hover:scale-110"
+                alt="Workspace">
+        </div>
+
+        <!-- Logo (Moved to Top Left) -->
+        <div class="absolute top-5 left-5 z-20">
+            <a href="{% url 'index' %}" class="logo" target="_blank"
+                style="display: flex; align-items: center; text-decoration: none;">
+                <img src="{% static 'ImageLogox.png' %}" alt="JetMyProjects Logo" style="height: 32px;">
+                JetMyProjects
+            </a>
+        </div>
+
+        <!-- Overlay Content -->
+        <div class="relative z-10 px-16 text-center text-white max-w-2xl">
+            <h2 class="text-4xl xl:text-5xl font-bold mb-4 leading-tight">A Simple Way to Stay Organized</h2>
+            <p class="text-lg text-slate-200 leading-relaxed">Join professionals who trust
+                JetMyProjects to manage their tasks efficiently.</p>
+        </div>
+
+        <!-- Gradient Overlay -->
+        <div
+            class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent z-0 pointer-events-none">
+        </div>
+    </div>
+
+    <!-- Right Side: Form -->
+    <div class="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 bg-white h-full relative">
+        <!-- Mobile Logo (Visible only on small screens) -->
+        <div class="lg:hidden absolute top-6 left-6 z-20">
+            <a href="{% url 'index' %}" class="logo" target="_blank"
+                style="display: flex; align-items: center; text-decoration: none;">
+                <img src="{% static 'ImageLogox.png' %}" alt="JetMyProjects Logo" style="height: 32px;">
+
+            </a>
+        </div>
+
+        <div class="w-full max-w-[450px] space-y-7">
+            <!-- Header (Medium-Large) -->
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-slate-800 mb-1.5">Create Account</h1>
+                <p class="text-slate-500 text-base">Start your journey with us today.</p>
+            </div>
+
+            <!-- Form -->
+            <form action="#" onsubmit="return false;" id="signUpForm" class="space-y-4">
+
+                <!-- Email Input (Medium) -->
+                <div class="relative">
+                    <input type="email" id="signUpEmail" name="email_signup" required maxlength="100" class="peer w-full px-4 pt-6 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none 
+               focus:border-brand-green focus:bg-white transition-all text-slate-800 
+               placeholder-transparent text-base" placeholder="Email Address">
+
+                    <label for="signUpEmail" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none
+               peer-placeholder-shown:top-1/2
+               peer-placeholder-shown:-translate-y-1/2
+               peer-placeholder-shown:text-base
+
+               peer-focus:top-1
+               peer-focus:translate-y-0
+               peer-focus:text-sm
+               peer-focus:text-brand-green
+
+               peer-[&:not(:placeholder-shown)]:top-1
+               peer-[&:not(:placeholder-shown)]:translate-y-0
+               peer-[&:not(:placeholder-shown)]:text-sm
+               peer-[&:not(:placeholder-shown)]:text-slate-500
+
+               bg-white px-1">
+                        Email Address
+                    </label>
+                </div>
+
+
+
+                <!-- Password Input (Medium) -->
+                <div class="relative">
+                    <input type="password" id="passwordField" name="password_signup" required maxlength="128" class="peer w-full px-4 pt-6 pb-2 bg-slate-50 border-2 border-slate-200 rounded-xl outline-none 
+               focus:border-brand-green focus:bg-white transition-all text-slate-800 
+               placeholder-transparent text-base" placeholder="Password">
+
+                    <label for="passwordField" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-all duration-200 pointer-events-none
+               peer-placeholder-shown:top-1/2
+               peer-placeholder-shown:-translate-y-1/2
+               peer-placeholder-shown:text-base
+
+               peer-focus:top-1
+               peer-focus:translate-y-0
+               peer-focus:text-sm
+               peer-focus:text-brand-green
+
+               peer-[&:not(:placeholder-shown)]:top-1
+               peer-[&:not(:placeholder-shown)]:translate-y-0
+               peer-[&:not(:placeholder-shown)]:text-sm
+               peer-[&:not(:placeholder-shown)]:text-slate-500
+
+               bg-white px-1">
+                        Password
+                    </label>
+                </div>
+
+
+
+                <!-- Show Password Checkbox -->
+                <div class="flex items-center">
+                    <input type="checkbox" id="showPassword"
+                        class="custom-checkbox w-5 h-5 rounded border-slate-300 text-brand-green focus:ring-brand-green cursor-pointer">
+                    <label for="showPassword"
+                        class="ml-2 text-sm text-slate-500 cursor-pointer hover:text-slate-700 select-none">Show
+                        Password</label>
+                </div>
+
+                <!-- Password Strength Meter (Larger Grid) -->
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Security
+                        Requirements
+                    </p>
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                        <div id="req-length"
+                            class="req-item flex items-center text-slate-400 transition-colors duration-300">
+                            <i class="fas fa-circle text-[6px] mr-2 transition-transform duration-300"></i>
+                            <span>8+ chars</span>
+                        </div>
+                        <div id="req-upper"
+                            class="req-item flex items-center text-slate-400 transition-colors duration-300">
+                            <i class="fas fa-circle text-[6px] mr-2 transition-transform duration-300"></i>
+                            <span>Uppercase</span>
+                        </div>
+                        <div id="req-number"
+                            class="req-item flex items-center text-slate-400 transition-colors duration-300">
+                            <i class="fas fa-circle text-[6px] mr-2 transition-transform duration-300"></i>
+                            <span>Number</span>
+                        </div>
+                        <div id="req-special"
+                            class="req-item flex items-center text-slate-400 transition-colors duration-300">
+                            <i class="fas fa-circle text-[6px] mr-2 transition-transform duration-300"></i>
+                            <span>Special char</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Age Checkbox -->
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="age13" required
+                        class="custom-checkbox w-4 h-4 rounded border-slate-300 text-brand-green focus:ring-brand-green cursor-pointer">
+                    <label for="age13"
+                        class="ml-2 text-sm text-slate-500 cursor-pointer hover:text-slate-700 select-none">
+                        I am at least 13 years old
+                    </label>
+                </div>
+                <!-- Terms Checkbox -->
+                <div class="flex items-start">
+                    <input type="checkbox" id="agreeTerms" required
+                        class="custom-checkbox w-4 h-4 mt-0.5 rounded border-slate-300 text-brand-green focus:ring-brand-green cursor-pointer shadow-sm">
+                    <label for="agreeTerms" class="ml-2 text-sm text-slate-500 leading-tight">
+                        I agree to the <a href="{% url 'terms' %}" target="_blank"
+                            class="text-brand-orange hover:text-orange-700 font-medium">Terms
+                            of Service</a> and <a href="{% url 'privacy' %}" target="_blank"
+                            class="text-brand-orange hover:text-orange-700 font-medium">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" disabled
+                    class="w-full py-3.5 rounded-xl bg-brand-orange text-white font-bold shadow-lg shadow-orange-200 transform transition-all duration-200 hover:shadow-xl hover:bg-orange-700 hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none text-base">
+                    Create Account
+                </button>
+
+                <!-- Footer -->
+                <div class="text-center pt-2">
+                    <p class="text-slate-500 text-sm">
+                        Already have an account?
+                        <a href="/login/"
+                            class="text-brand-green font-semibold hover:text-green-700 hover:underline transition-all">Sign
+                            In</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toast Notification System
+    function showNotification(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            warning: 'bg-yellow-500',
+            info: 'bg-blue-500'
+        };
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+
+        toast.className = `${colors[type]} text-white px-6 py-4 rounded-xl shadow-xl flex items-center min-w-[300px] animate-[slideIn_0.3s_ease-out]`;
+        toast.innerHTML = `
+                <i class="fas ${icons[type]} text-xl mr-3"></i>
+                <span class="font-medium">${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-auto text-white/80 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+        container.appendChild(toast);
+
+        // Auto dismiss
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-x-full', 'transition-all', 'duration-500');
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    }
+
+    // Form Logic
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordField = document.getElementById('passwordField');
+        const showPasswordCheckbox = document.getElementById('showPassword');
+        const submitBtn = document.getElementById('submitBtn');
+        const reqLength = document.getElementById('req-length');
+        const reqUpper = document.getElementById('req-upper');
+        const reqNumber = document.getElementById('req-number');
+        const reqSpecial = document.getElementById('req-special');
+        const agreeTerms = document.getElementById('agreeTerms');
+        const age13 = document.getElementById('age13');
+        const signUpForm = document.getElementById('signUpForm');
+
+        // Show/Hide Password
+        showPasswordCheckbox.addEventListener('change', function () {
+            passwordField.type = this.checked ? 'text' : 'password';
+        });
+
+        // Validation Logic
+        function validateForm() {
+            const val = passwordField.value;
+            const isLengthValid = val.length >= 8;
+            const isUpperValid = /[A-Z]/.test(val);
+            const isNumberValid = /[0-9]/.test(val);
+            const isSpecialValid = /[@$!%*?&#^_+=-]/.test(val);
+            const isTermsChecked = agreeTerms.checked;
+            const isAgeChecked = age13.checked;
+
+            // Update UI for requirements
+            updateRequirement(reqLength, isLengthValid);
+            updateRequirement(reqUpper, isUpperValid);
+            updateRequirement(reqNumber, isNumberValid);
+            updateRequirement(reqSpecial, isSpecialValid);
+
+            // Enable/Disable Submit
+            if (isLengthValid && isUpperValid && isNumberValid && isSpecialValid && isTermsChecked && isAgeChecked) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        function updateRequirement(element, isValid) {
+            const icon = element.querySelector('i');
+
+            if (isValid) {
+                element.classList.remove('text-slate-400');
+                element.classList.add('text-brand-green', 'font-medium');
+                icon.classList.remove('fa-circle', 'text-[8px]');
+                icon.classList.add('fa-check-circle', 'text-sm', 'scale-110');
+            } else {
+                element.classList.add('text-slate-400');
+                element.classList.remove('text-brand-green', 'font-medium');
+                icon.classList.add('fa-circle', 'text-[8px]');
+                icon.classList.remove('fa-check-circle', 'text-sm', 'scale-110');
+            }
+        }
+
+        passwordField.addEventListener('input', validateForm);
+        agreeTerms.addEventListener('change', validateForm);
+        age13.addEventListener('change', validateForm);
+
+        // Initial validation call to set button state on page load
+        validateForm();
+
+        // Form Submission
+        signUpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signUpEmail').value;
+            const password = document.getElementById('passwordField').value;
+
+            // Loading State
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Checking...';
+
+            try {
+                // Check if email already exists
+                const checkResponse = await fetch('/api/v1/accounts/auth/check-email/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const checkData = await checkResponse.json();
+
+                if (!checkResponse.ok) {
+                    const errorMsg = checkData.error || 'Invalid email address.';
+                    showNotification(errorMsg, 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                    return;
+                }
+
+                if (checkData.exists) {
+                    showNotification('Account with this email already exists. Please Sign In.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                    return; // Stop here, do not redirect
+                }
+
+                // If email is new, proceed
+                submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Processing...';
+
+                setTimeout(() => {
+                    // Store credentials in sessionStorage
+                    sessionStorage.setItem('signup_email', email.toLowerCase());
+                    sessionStorage.setItem('signup_password', password);
+
+                    showNotification('Proceeding to profile setup...', 'success');
+
+                    // Redirect to Step 2: Profile Info
+                    setTimeout(() => window.location.href = '/signup/profile/', 1000);
+                }, 800);
+
+            } catch (error) {
+                console.error('Error checking email:', error);
+                showNotification('Network error. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+    });
+</script>
+{% endblock %}

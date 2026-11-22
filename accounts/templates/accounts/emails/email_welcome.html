@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jetmyprojects | Smart Project & Deadline Tracker</title>
+</head>
+
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+
+    <!-- WELCOME EMAIL -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+        style="background-color: #f4f7f6; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0"
+                    style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #BE5103; padding: 30px; text-align: center;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                <tr>
+                                    <td style="padding-right: 15px; vertical-align: middle;">
+                                        <img src="{{ logo_url }}" width="45" height="45" alt="JetMyProjects Logo"
+                                            border="0" style="display:block;">
+
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <h1
+                                            style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; white-space: nowrap;">
+                                            JetMyProjects<sup style="font-size: 14px;">®</sup>
+                                        </h1>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="margin: 0 0 20px 0; color: #BE5103; font-size: 24px; font-weight: 700;">Welcome
+                                to JetMyProjects!</h2>
+                            <p style="margin: 0 0 15px 0; color: #333; font-size: 16px; line-height: 1.6;">Hi {{
+                                first_name|default:'User' }},</p>
+                            <p style="margin: 0 0 15px 0; color: #333; font-size: 16px; line-height: 1.6;">
+                                Welcome aboard! We're excited to help you track your project deadlines more effectively.
+                                Your account has been successfully created and you're ready to get started.
+                            </p>
+                            <p style="margin: 0 0 25px 0; color: #333; font-size: 16px; line-height: 1.6;">
+                                Here's what you can do now:
+                            </p>
+                            <ul
+                                style="margin: 0 0 25px 0; padding-left: 20px; color: #333; font-size: 16px; line-height: 1.8;">
+                                <li>Create your first project</li>
+                                <li>Set up deadline notifications</li>
+                                <li>Upload important files</li>
+                                <li>Explore your dashboard</li>
+                            </ul>
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                                <tr>
+                                    <td style="background-color: #4EA72E; border-radius: 5px; text-align: center;">
+                                        <a href="{{ dashboard_url|default:'https://www.jetmyprojects.com/dashboard/' }}"
+                                            style="display: inline-block; padding: 14px 40px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px;">
+                                            Go to Dashboard
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin: 25px 0 0 0; color: #666; font-size: 14px; line-height: 1.6;">
+                                Need help getting started? Check out our <a href="https://www.jetmyprojects.com/help"
+                                    style="color: #BE5103; text-decoration: none;">help center</a> or reply to this
+                                email.
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td
+                            style="background-color: #f4f7f6; padding: 20px 30px; text-align: center; border-top: 1px solid #eee;">
+                            <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
+                                © 2026 JetMyProjects. All rights reserved.
+                            </p>
+                            <p style="margin: 0; color: #999; font-size: 12px;">
+                                <a href="https://www.jetmyprojects.com/unsubscribe"
+                                    style="color: #999; text-decoration: underline;">Unsubscribe</a> |
+                                <a href="https://www.jetmyprojects.com/privacy"
+                                    style="color: #999; text-decoration: underline;">Privacy
+                                    Policy</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

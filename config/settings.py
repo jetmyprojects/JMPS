@@ -241,38 +241,71 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 # Logging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
+# Vercel (and most serverless hosts) have a read-only filesystem, so file-based
+# log handlers crash the app at startup. Detect that and log to stdout instead
+# (Vercel captures stdout/stderr in its Runtime Logs). Elsewhere keep file logs.
+_SERVERLESS = bool(os.getenv('VERCEL') or os.getenv('VERCEL_ENV'))
+
+if _SERVERLESS:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'ERROR',
+                'propagate': True,
+            },
+            'subscriptions': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+        'root': {
+            'handlers': ['console'],
             'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'errors.log',
         },
-        'webhook_file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'webhook_debug.log',
+    }
+else:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'file': {
+                'level': 'ERROR',
+                'class': 'logging.FileHandler',
+                'filename': BASE_DIR / 'errors.log',
+            },
+            'webhook_file': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': BASE_DIR / 'webhook_debug.log',
+            },
         },
-    },
-    'loggers': {
-        'django': {
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'ERROR',
+                'propagate': True,
+            },
+            'subscriptions': {
+                'handlers': ['webhook_file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+        'root': {
             'handlers': ['file'],
             'level': 'ERROR',
-            'propagate': True,
         },
-        'subscriptions': {
-            'handlers': ['webhook_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
-    'root': {
-        'handlers': ['file'],
-        'level': 'ERROR',
-    },
-}
+    }
 
 FRONTEND_DOMAIN = "https://www.jetmyprojects.com"
 

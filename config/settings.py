@@ -207,7 +207,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # SMTP Configuration for SMTP2GO
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'mail.smtp2go.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 443))
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 2525))  # SMTP2GO STARTTLS port (443 is SSL-only and breaks TLS)
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False') == 'True'
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')

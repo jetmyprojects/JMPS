@@ -62,7 +62,7 @@ def send_html_otp_email(to_email, otp, first_name=None):
     
     html_content = render_to_string('accounts/emails/email_passcode_v2.html', context)
     
-    EmailThread(subject, html_content, [to_email]).start()
+    EmailThread(subject, html_content, [to_email]).run()  # synchronous: serverless freezes background threads
 
 def send_welcome_email(to_email, first_name=None):
     """
@@ -84,8 +84,8 @@ def send_welcome_email(to_email, first_name=None):
     }
     
     html_content = render_to_string('accounts/emails/email_welcome_v2.html', context)
-    
-    EmailThread(subject, html_content, [to_email]).start()
+
+    EmailThread(subject, html_content, [to_email]).run()  # synchronous: serverless freezes background threads
 
 def send_forgot_password_email(to_email, otp, first_name=None):
     """
@@ -105,7 +105,7 @@ def send_forgot_password_email(to_email, otp, first_name=None):
     
     html_content = render_to_string('accounts/emails/email_forgot_password_v2.html', context)
     
-    EmailThread(subject, html_content, [to_email]).start()
+    EmailThread(subject, html_content, [to_email]).run()  # synchronous: serverless freezes background threads
 
 def send_profile_update_email(to_email, otp, first_name=None):
     """
@@ -125,4 +125,4 @@ def send_profile_update_email(to_email, otp, first_name=None):
     
     html_content = render_to_string('accounts/emails/email_profile_update.html', context)
     
-    EmailThread(subject, html_content, [to_email]).start()
+    EmailThread(subject, html_content, [to_email]).run()  # synchronous: serverless freezes background threads

@@ -169,7 +169,7 @@ class SignupView(generics.CreateAPIView):
                         target=send_html_otp_email, 
                         args=(user.email, otp, user.first_name)
                     )
-                    email_thread.start()
+                    email_thread.run()  # synchronous: serverless freezes background threads
                 except Exception as e:
                     import sys
                     print(f"CRITICAL ERROR Sending Email in View: {e}", file=sys.stderr)
@@ -289,7 +289,7 @@ class LoginView(APIView):
                             target=send_html_otp_email, 
                             args=(user.email, otp, user.first_name)
                         )
-                        email_thread.start()
+                        email_thread.run()  # synchronous: serverless freezes background threads
                     except Exception as e:
                         logger.error(f"Error sending email: {e}")
                         return Response({'error': 'Failed to send verification email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -480,7 +480,7 @@ class SendOTPView(APIView):
                     target=send_html_otp_email, 
                     args=(email, otp, user.first_name)
                 )
-                email_thread.start()
+                email_thread.run()  # synchronous: serverless freezes background threads
             except Exception as e:
                 logger.error(f"Error initiating email thread: {e}")
                 return Response({'error': 'Failed to initiate email sending'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -644,7 +644,7 @@ class ForgotPasswordView(APIView):
                         target=send_forgot_password_email,
                         args=(email, otp, user.first_name)
                     )
-                    email_thread.start()
+                    email_thread.run()  # synchronous: serverless freezes background threads
                 except Exception as e:
                     logger.error(f"Error sending email: {e}")
                     return Response({'error': 'Failed to send email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -792,7 +792,7 @@ class InitiateEmailChangeView(APIView):
                 target=send_html_otp_email, 
                 args=(new_email, otp, user.first_name)
             )
-            email_thread.start()
+            email_thread.run()  # synchronous: serverless freezes background threads
         except Exception as e:
             logger.error(f"Error sending email: {e}")
             return Response({'error': 'Failed to send verification email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -863,7 +863,7 @@ class ResendEmailChangeOTPView(APIView):
                 target=send_html_otp_email, 
                 args=(new_email, otp, user.first_name)
             )
-            email_thread.start()
+            email_thread.run()  # synchronous: serverless freezes background threads
         except Exception as e:
             logger.error(f"Error sending email: {e}")
             return Response({'error': 'Failed to send verification email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -930,7 +930,7 @@ class InitiateProfileUpdateView(APIView):
                     target=send_profile_update_email,
                     args=(user.email, otp, user.first_name)
                 )
-                email_thread.start()
+                email_thread.run()  # synchronous: serverless freezes background threads
             except Exception as e:
                 logger.error(f"Error sending email: {e}")
                 return Response({'error': 'Failed to send verification email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -1016,7 +1016,7 @@ class ResendProfileUpdateOTPView(APIView):
                 target=send_profile_update_email,
                 args=(user.email, otp, user.first_name)
             )
-            email_thread.start()
+            email_thread.run()  # synchronous: serverless freezes background threads
         except Exception as e:
             logger.error(f"Error sending email: {e}")
             return Response({'error': 'Failed to send verification email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

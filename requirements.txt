@@ -1,0 +1,12 @@
+Django>=5.0,<6.1
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+drf-yasg
+django-crontab
+whitenoise
+python-dotenv
+psycopg2-binary
+stripe
+requests
+Pillow

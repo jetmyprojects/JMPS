@@ -1,0 +1,32 @@
+# Environment & secrets
+.env
+*.env
+!.env.example
+
+# Local-only dev settings override (production uses config/settings.py)
+config/dev_settings.py
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+/staticfiles/
+*.log
+errors.log
+webhook_debug.log
+
+# Media uploads
+/media/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -16,4 +16,4 @@ from config.wsgi import application
 app = application
 
 # Deployed via Vercel (WSGI entrypoint). Push to main to trigger a redeploy.
-# Redeploy trigger: 2026-11-23 — apply SMTP2GO email env vars.
+# Redeploy trigger: 2026-11-23 — apply Stripe test env vars + webhook.

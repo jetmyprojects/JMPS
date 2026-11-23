@@ -60,7 +60,6 @@ class SubscribeView(APIView):
             # 2. Create Stripe Checkout Session
             checkout_session = stripe.checkout.Session.create(
                 customer_email=request.user.email, # Or customer ID if we stored it
-                payment_method_types=['card'],
                 line_items=[
                     {
                         'price_data': {

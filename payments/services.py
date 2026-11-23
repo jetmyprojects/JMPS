@@ -211,7 +211,6 @@ def _create_stripe_session(user, plan, discount_obj, domain, discount_code_str):
 
     checkout_session = stripe.checkout.Session.create(
         customer=customer_id,
-        payment_method_types=['card'],
         line_items=[{
             'price_data': {
                 'currency': 'usd', 
